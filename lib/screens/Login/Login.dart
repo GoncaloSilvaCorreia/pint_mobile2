@@ -223,8 +223,8 @@ class _LoginPageState extends State<LoginPage> {
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
                 const Text('Não tem uma conta? '),
-                GestureDetector(
-                  onTap: () => context.go('/Contacto'),
+                TextButton(
+                  onPressed: () => context.go('/Contacto'),
                   child: const Text(
                     'Contactar gestor',
                     style: TextStyle(color: Colors.cyan),

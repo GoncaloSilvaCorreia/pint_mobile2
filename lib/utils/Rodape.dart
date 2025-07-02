@@ -29,11 +29,11 @@ class Rodape extends StatelessWidget {
           label: 'Perfil',
         ),
       ],
-      currentIndex: 0, // índice do item selecionado (pode implementar dinâmico)
+      currentIndex: 0,
       onTap: (index) {
         switch (index) {
           case 0:
-            context.go('/TelaPrincipal');  // TelaPrincipal
+            context.go('/TelaPrincipal');
             break;
           case 1:
             context.go('/pesquisar');

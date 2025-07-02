@@ -38,13 +38,19 @@ final rotas = GoRouter(
   redirect: (context, state) {
     final isLoggedIn = context.read<AuthProvider>().isLoggedIn;
     final isLoginRoute = state.uri.toString() == '/Login';
+    final isResetRoute = state.uri.toString() == '/Reset';
+    final isContactoRoute = state.uri.toString() == '/Contacto';
 
-    // Se não está logado e não está na tela de login → vá para login
-    if (!isLoggedIn && !isLoginRoute) return '/Login';
+    // Permite acesso a Login, Reset e Contacto SEM estar logado
+    if (!isLoggedIn && !(isLoginRoute || isResetRoute || isContactoRoute)) {
+      return '/Login';
+    }
 
-    // Se está logado e está na tela de login → vá para a tela principal
-    if (isLoggedIn && isLoginRoute) return '/TelaPrincipal';
+    // Se está logado e está no login, redirect para TelaPrincipal
+    if (isLoggedIn && isLoginRoute) {
+      return '/TelaPrincipal';
+    }
 
-    return null; // Nenhum redirecionamento necessário
+    return null;
   },
 );
