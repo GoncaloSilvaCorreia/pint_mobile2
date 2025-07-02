@@ -33,21 +33,21 @@ class _PesquisaState extends State<Pesquisa> {
   }
 
   void _goBack() {
-  setState(() {
-    if (_currentStep == 'courses') {
-      _currentStep = 'types';
-    } else if (_currentStep == 'types') {
-      _currentStep = 'topics';
-      _selectedTopic = null;
-    } else if (_currentStep == 'topics') {
-      _currentStep = 'areas';
-      _selectedArea = null;
-    } else if (_currentStep == 'areas') {
-      _currentStep = 'categories';
-      _selectedCategory = null;
-    }
-  });
-}
+    setState(() {
+      if (_currentStep == 'courses') {
+        _currentStep = 'types';
+      } else if (_currentStep == 'types') {
+        _currentStep = 'topics';
+        _selectedTopic = null;
+      } else if (_currentStep == 'topics') {
+        _currentStep = 'areas';
+        _selectedArea = null;
+      } else if (_currentStep == 'areas') {
+        _currentStep = 'categories';
+        _selectedCategory = null;
+      }
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -164,92 +164,52 @@ class _PesquisaState extends State<Pesquisa> {
       itemCount: topics.length,
       itemBuilder: (context, index) {
         final topic = topics[index];
-        return Card(
-          margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-          child: ListTile(
-            title: Text(
-              topic.description,
-              style: const TextStyle(fontWeight: FontWeight.bold),
-            ),
-            onTap: () async {
-              setState(() => _isLoadingCourses = true);
-              
-              await _searchManager.getCoursesByTopic(topic.id);
-              
-              // Atualiza o estado
-              setState(() {
-                _selectedTopic = topic;
-                _currentStep = 'types';
-                _isLoadingCourses = false;
-              });
-            },
-          ),
+        return ListTile(
+          title: Text(topic.description),
+          trailing: const Icon(Icons.arrow_forward_ios),
+          onTap: () async {
+            setState(() => _isLoadingCourses = true);
+            
+            await _searchManager.getCoursesByTopic(topic.id);
+            
+            setState(() {
+              _selectedTopic = topic;
+              _currentStep = 'types';
+              _isLoadingCourses = false;
+            });
+          },
         );
       },
     );
   }
 
   Widget _buildTypeList() {
-    return Column(
-      children: [
-        const Padding(
-          padding: EdgeInsets.all(16.0),
-          child: Text(
-            'Selecione o tipo de curso',
-            style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-          ),
-        ),
-        Expanded(
-          child: ListView(
-            children: [
-              ListTile(
-                title: const Text('Síncrono'),
-                leading: Radio<bool?>(
-                  value: false,
-                  groupValue: _selectedCourseType,
-                  onChanged: (value) {
-                    setState(() {
-                      _selectedCourseType = value;
-                      _currentStep = 'courses';
-                    });
-                  },
-                ),
-              ),
-              ListTile(
-                title: const Text('Assíncrono'),
-                leading: Radio<bool?>(
-                  value: true,
-                  groupValue: _selectedCourseType,
-                  onChanged: (value) {
-                    setState(() {
-                      _selectedCourseType = value;
-                      _currentStep = 'courses';
-                    });
-                  },
-                ),
-              ),
-              ListTile(
-                title: const Text('Todos os Tipos'),
-                leading: Radio<bool?>(
-                  value: null,
-                  groupValue: _selectedCourseType,
-                  onChanged: (value) {
-                    setState(() {
-                      _selectedCourseType = value;
-                      _currentStep = 'courses';
-                    });
-                  },
-                ),
-              ),
-            ],
-          ),
-        ),
-      ],
+    final tipos = [
+      {'label': 'Síncrono', 'value': false},
+      {'label': 'Assíncrono', 'value': true},
+      {'label': 'Todos os Tipos', 'value': null},
+    ];
+
+    return ListView.builder(
+      itemCount: tipos.length,
+      itemBuilder: (context, index) {
+        final tipo = tipos[index];
+        return ListTile(
+          title: Text(tipo['label'] as String),
+          trailing: const Icon(Icons.arrow_forward_ios),
+          onTap: () {
+            setState(() {
+              _selectedCourseType = tipo['value'] as bool?;
+              _currentStep = 'courses';
+            });
+          },
+        );
+      },
     );
   }
-
+  
   Widget _buildCourseList() {
-    final courses = _searchManager.filterCoursesByType(_selectedCourseType);
+    final courses = _searchManager.filterCoursesByTopicAndType( _selectedTopic?.id, _selectedCourseType,);
     
     if (courses.isEmpty) {
       return const Center(child: Text('Nenhum curso disponível'));

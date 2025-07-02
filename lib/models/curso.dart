@@ -43,7 +43,7 @@ class Course {
       createdAt: DateTime.parse(json['createdAt'] as String? ?? DateTime.now().toIso8601String()),
       updatedAt: json['updatedAt'] != null ? DateTime.parse(json['updatedAt'] as String) : null,
       status: json['status'] as int? ?? 1,
-      topicId: json['topicId'] as int? ?? 0,
+      topicId: json['topic'] != null ? json['topic']['id'] as int : 0,
       level: json['level'] as String? ?? 'Básico',
       image: json['image'] as String?,
       startDate: DateTime.parse(json['startDate'] as String? ?? DateTime.now().toIso8601String()),

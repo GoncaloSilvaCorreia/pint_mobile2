@@ -48,4 +48,12 @@ class SearchManager {
     if (isAsync == null) return _courses; // Mostra todos
     return _courses.where((course) => course.type == isAsync).toList();
   }
+
+  List<Course> filterCoursesByTopicAndType(int? topicId, bool? isAsync) {
+    return _courses.where((course) {
+      final matchesTopic = topicId == null || course.topicId == topicId;
+      final matchesType = isAsync == null || course.type == isAsync;
+      return matchesTopic && matchesType;
+    }).toList();
+  }
 }
