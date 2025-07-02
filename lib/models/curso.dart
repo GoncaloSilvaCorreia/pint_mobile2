@@ -1,7 +1,7 @@
 class Course {
   final int id;
   final String title;
-  final bool courseType; // false=Síncrono, true=Assíncrono
+  final bool type; // false=Síncrono, true=Assíncrono
   final String description;
   final String instructor;
   final DateTime createdAt;
@@ -18,7 +18,7 @@ class Course {
   Course({
     required this.id,
     required this.title,
-    required this.courseType,
+    required this.type,
     required this.description,
     required this.instructor,
     required this.createdAt,
@@ -37,7 +37,7 @@ class Course {
     return Course(
       id: json['id'] as int? ?? 0,
       title: json['title'] as String? ?? '',
-      courseType: json['courseType'] as bool? ?? false,
+      type: json['courseType'] as bool? ?? false,
       description: json['description'] as String? ?? '',
       instructor: json['instructor'] as String? ?? '',
       createdAt: DateTime.parse(json['createdAt'] as String? ?? DateTime.now().toIso8601String()),
@@ -56,7 +56,7 @@ class Course {
   Map<String, dynamic> toJson() => {
         'id': id,
         'title': title,
-        'courseType': courseType,
+        'courseType': type,
         'description': description,
         'instructor': instructor,
         'createdAt': createdAt.toIso8601String(),
@@ -72,7 +72,7 @@ class Course {
       };
 
   // Métodos auxiliares
-  String get courseTypeName => courseType ? 'Assíncrono' : 'Síncrono';
+  String get courseType => type ? 'Assíncrono' : 'Síncrono';
   String get statusName => status == 1 ? 'Ativo' : 'Inativo';
   bool get hasVacancies => vacancies == null || vacancies! > 0;
 }
