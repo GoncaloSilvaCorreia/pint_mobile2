@@ -18,8 +18,8 @@ class Enrollment {
   factory Enrollment.fromJson(Map<String, dynamic> json) {
     return Enrollment(
       id: json['id'] as int? ?? 0,
-      courseId: json['courseId'] as int? ?? 0,
-      workerNumber: json['workerNumber'] as String? ?? '',
+      courseId: json['courseId'] as int? ?? json['id_curso'] as int? ?? 0,
+      workerNumber: json['workerNumber'] as String? ?? json['n_trabalhador'] as String? ?? '',
       enrollmentDate: DateTime.parse(json['enrollmentDate'] as String? ?? DateTime.now().toIso8601String()),
       status: json['status'] as String? ?? 'Pendente',
       rating: json['rating'] != null ? (json['rating'] as num).toDouble() : null,

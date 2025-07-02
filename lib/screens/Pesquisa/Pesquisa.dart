@@ -1,12 +1,19 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+
 import 'package:pint_mobile/api/api_pesquisa.dart';
+
+//import 'package:pint_mobile/models/topico.dart';
 import 'package:pint_mobile/models/categoria.dart';
 import 'package:pint_mobile/models/area.dart';
 import 'package:pint_mobile/models/topico.dart';
+import 'package:pint_mobile/models/inscricoes.dart';
+
 import 'package:pint_mobile/utils/Rodape.dart';
 import 'package:pint_mobile/utils/SideMenu.dart';
-//import 'package:pint_mobile/models/topico.dart';
+
+import 'package:pint_mobile/screens/Curso/Curso.dart';
 
 class Pesquisa extends StatefulWidget {
   const Pesquisa({super.key});
@@ -231,8 +238,34 @@ class _PesquisaState extends State<Pesquisa> {
                 Text('Data: ${DateFormat('dd/MM/yyyy').format(course.startDate)} - ${DateFormat('dd/MM/yyyy').format(course.endDate)}'),
               ],
             ),
-            onTap: () {
-              // Navegar para detalhes do curso
+            onTap: () async {
+              // Buscar workerNumber
+              SharedPreferences prefs = await SharedPreferences.getInstance();
+              String? userWorkerNumber = prefs.getString('workerNumber');
+
+              if (userWorkerNumber == null) {
+                ScaffoldMessenger.of(context).showSnackBar(
+                  const SnackBar(content: Text('Erro: Utilizador não encontrado.')),
+                );
+                return;
+              }
+
+              // Buscar inscrição do utilizador neste curso
+              Enrollment? enrollment = await _searchManager.getEnrollmentForCourseAndUser(
+                course.id,
+                userWorkerNumber,
+              );
+
+              // Navegar para detalhe do curso
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (context) => CourseDetailScreen(
+                    course: course,
+                    enrollment: enrollment,
+                  ),
+                ),
+              );
             },
           ),
         );

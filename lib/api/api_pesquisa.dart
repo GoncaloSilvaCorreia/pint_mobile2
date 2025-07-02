@@ -1,5 +1,6 @@
 import 'package:pint_mobile/models/area.dart';
 import 'package:pint_mobile/models/categoria.dart';
+import 'package:pint_mobile/models/inscricoes.dart';
 //import 'package:pint_mobile/models/areas_all.dart';
 import 'package:pint_mobile/models/topico.dart';
 import 'package:pint_mobile/models/curso.dart';
@@ -8,6 +9,7 @@ import 'package:pint_mobile/api/api_categoria.dart';
 import 'package:pint_mobile/api/api_area.dart';
 import 'package:pint_mobile/api/api_topico.dart';
 import 'package:pint_mobile/api/api_curso.dart';
+import 'package:pint_mobile/api/api_inscricoes.dart';
 
 class SearchManager {
   final CategoryService _categoryService = CategoryService();
@@ -55,5 +57,15 @@ class SearchManager {
       final matchesType = isAsync == null || course.type == isAsync;
       return matchesTopic && matchesType;
     }).toList();
+  }
+
+  Future<Enrollment?> getEnrollmentForCourseAndUser(int courseId, String workerNumber) async {
+    List<Enrollment> allEnrollments = await EnrollmentService().getEnrollments();
+
+    try {
+      return allEnrollments.firstWhere((e) => e.courseId == courseId && e.workerNumber == workerNumber);
+    } catch (_) {
+      return null; // não inscrito
+    }
   }
 }

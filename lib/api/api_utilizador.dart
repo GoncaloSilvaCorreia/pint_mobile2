@@ -19,6 +19,10 @@ class AuthService {
       final prefs = await SharedPreferences.getInstance();
       await prefs.setString('token', data['token']);
       
+      // Salvar workerNumber no SharedPreferences
+      await prefs.setString('workerNumber', data['user']['workerNumber']);
+
+      // Retornar o utilizador logado com token incluído
       return Utilizador.fromJson({
         ...data['user'],
         'token': data['token'],
@@ -32,5 +36,6 @@ class AuthService {
   Future<void> logout() async {
     final prefs = await SharedPreferences.getInstance();
     await prefs.remove('token');
+    await prefs.remove('workerNumber'); // Remove também o workerNumber no logout
   }
 }
