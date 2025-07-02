@@ -5,6 +5,7 @@ import 'package:pint_mobile/screens/Login/Reset.dart';
 import 'package:pint_mobile/screens/Inicio/Inicio.dart';
 import 'package:provider/provider.dart';
 import 'package:pint_mobile/utils/auth_provider.dart';
+import 'package:pint_mobile/screens/Pesquisa/Pesquisa.dart';
 
 final rotas = GoRouter(
   initialLocation: '/Login',
@@ -28,6 +29,10 @@ final rotas = GoRouter(
       name: 'TelaPrincipal',
       path: '/TelaPrincipal',
       builder: (context, state) => TelaPrincipal(),
+    ),
+    GoRoute(
+      path: '/pesquisar',
+      builder: (context, state) => const Pesquisa(),
     ),
   ],
   redirect: (context, state) {

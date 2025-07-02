@@ -1,9 +1,9 @@
-import 'package:pint_mobile/models/area.dart';
+import 'package:pint_mobile/models/categoria_area.dart';
 
 class Category {
   final int id;
   final String description;
-  final List<Area> areas;
+  final List<CategoriaArea> areas;
 
   Category({
     required this.id,
@@ -15,7 +15,7 @@ class Category {
     return Category(
       id: json['id'],
       description: json['description'],
-      areas: (json['areas'] as List).map((area) => Area.fromJson(area)).toList(),
+      areas: (json['areas'] as List).map((area) => CategoriaArea.fromJson(area)).toList(),
     );
   }
 }

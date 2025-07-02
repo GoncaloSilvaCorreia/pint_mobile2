@@ -1,19 +1,19 @@
 class Area {
   final int id;
   final String description;
-  final int categoryId;
+  final int? categoryId;
 
   Area({
     required this.id,
     required this.description,
-    required this.categoryId,
+    this.categoryId,
   });
 
   factory Area.fromJson(Map<String, dynamic> json) {
     return Area(
-      id: json['id'],
-      description: json['description'],
-      categoryId: json['categoryId'] ?? json['category']?['id'],
+      id: json['id'] as int,
+      description: json['description'] as String,
+      categoryId: json['categoryId'] as int? ?? json['category']?['id'] as int?,
     );
   }
 }
