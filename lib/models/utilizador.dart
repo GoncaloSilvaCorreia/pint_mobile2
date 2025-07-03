@@ -3,39 +3,46 @@ class Utilizador {
   final String nome;
   final String email;
   final List<String> roles;
-  final String token;
+  final String? primaryRole;
+  final String workerNumber;
+  final String token; // tornar obrigatório
+  final String? pfp;
+  final List<Map<String, dynamic>> interests;
 
   Utilizador({
     required this.id,
     required this.nome,
     required this.email,
     required this.roles,
-    required this.token,
+    this.primaryRole,
+    required this.workerNumber,
+    required this.token, // obrigatório
+    this.pfp,
+    required this.interests,
   });
 
   factory Utilizador.fromJson(Map<String, dynamic> json) {
     try {
-      final userData = json['user'] as Map<String, dynamic>? ?? {};
       final token = json['token'] as String? ?? '';
 
+      final userData = json['user'] as Map<String, dynamic>? ?? json;
+
       return Utilizador(
-        id: (userData['id'] as int?) ?? 0, 
-        nome: (userData['name'] as String?) ?? '', 
+        id: (userData['id'] as int?) ?? 0,
+        nome: (userData['name'] as String?) ?? '',
         email: (userData['email'] as String?) ?? '',
-        roles: List<String>.from(userData['roles'] ?? []),
-        token: token,
+        roles: (userData['roles'] != null)
+            ? List<String>.from(userData['roles'])
+            : [],
+        primaryRole: userData['primaryRole'] as String?,
+        workerNumber: (userData['workerNumber'] as String?) ?? '',
+        token: token, // garante sempre valor
+        pfp: userData['pfp'],
+        interests: (userData['interests'] as List?)?.map((e) => e as Map<String, dynamic>).toList() ?? [],  // Adicionando interesses
       );
     } catch (e) {
       print('Erro ao criar Utilizador: $e');
       throw FormatException('Formato inválido dos dados do utilizador');
     }
   }
-
-  Map<String, dynamic> toJson() => {
-        'id': id,
-        'name': nome,
-        'email': email,
-        'roles': roles,
-        'token': token,
-      };
 }

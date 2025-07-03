@@ -25,6 +25,7 @@ class Pesquisa extends StatefulWidget {
 class _PesquisaState extends State<Pesquisa> {
   final SearchManager _searchManager = SearchManager();
   String _currentStep = 'categories';
+  String _workerNumber = '';
   Category? _selectedCategory;
   Area? _selectedArea;
   bool? _selectedCourseType; // false = síncrono, true = assíncrono
@@ -34,6 +35,7 @@ class _PesquisaState extends State<Pesquisa> {
   @override
   void initState() {
     super.initState();
+    _loadWorkerNumber();
     _searchManager.initialize().then((_) {
       setState(() {});
     });
@@ -56,12 +58,20 @@ class _PesquisaState extends State<Pesquisa> {
     });
   }
 
+  Future<void> _loadWorkerNumber() async {
+    final prefs = await SharedPreferences.getInstance();
+    final workerNumber = prefs.getString('workerNumber') ?? '';
+    setState(() {
+      _workerNumber = workerNumber;
+    });
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: Colors.grey[300],
       endDrawer: const SideMenu(),
-      bottomNavigationBar: const Rodape(),
+      bottomNavigationBar: Rodape(workerNumber: _workerNumber),
       appBar: AppBar(
         backgroundColor: Colors.grey[300],
         title: const Text('Pesquisa'),

@@ -2,16 +2,40 @@ import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'dart:convert';
 import 'package:http/http.dart' as http;
+import 'package:shared_preferences/shared_preferences.dart';
 
 import 'package:pint_mobile/utils/Rodape.dart';
+import 'package:pint_mobile/utils/SideMenu.dart';
+
 import 'package:pint_mobile/models/curso.dart';
 import 'package:pint_mobile/models/inscricoes.dart';
 
-class CourseDetailScreen extends StatelessWidget {
+class CourseDetailScreen extends StatefulWidget {
   final Course course;
   final Enrollment? enrollment;
 
   const CourseDetailScreen({super.key, required this.course, this.enrollment});
+
+  @override
+  State<CourseDetailScreen> createState() => _CourseDetailScreenState();
+}
+
+class _CourseDetailScreenState extends State<CourseDetailScreen> {
+  String _workerNumber = '';
+
+  @override
+  void initState() {
+    super.initState();
+    _loadWorkerNumber();
+  }
+
+  Future<void> _loadWorkerNumber() async {
+    final prefs = await SharedPreferences.getInstance();
+    final workerNumber = prefs.getString('workerNumber') ?? '';
+    setState(() {
+      _workerNumber = workerNumber;
+    });
+  }
 
   Future<String> getTrainerName(String trainerId) async {
     final response = await http.get(
@@ -20,7 +44,8 @@ class CourseDetailScreen extends StatelessWidget {
 
     if (response.statusCode == 200) {
       final data = jsonDecode(response.body);
-      final user = (data as List).firstWhere(
+      final users = data['users'] as List;
+      final user = users.firstWhere(
         (u) => u['workerNumber'] == trainerId,
         orElse: () => null,
       );
@@ -36,26 +61,22 @@ class CourseDetailScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    bool inscritoPendente = enrollment != null && enrollment!.status == "Pendente";
-    bool inscritoAtivo = enrollment != null && enrollment!.status == "Ativo";
+    final course = widget.course;
+    final enrollment = widget.enrollment;
+
+    bool inscritoPendente = enrollment != null && enrollment.status == "Pendente";
+    bool inscritoAtivo = enrollment != null && enrollment.status == "Ativo";
     bool cursoJaComecou = course.startDate.isBefore(DateTime.now());
     bool semVagas = course.vacancies != null && course.vacancies == 0;
 
     return Scaffold(
+      endDrawer: const SideMenu(),
       appBar: AppBar(
         title: const Text("Cursos"),
         leading: IconButton(
           icon: const Icon(Icons.arrow_back),
           onPressed: () => Navigator.pop(context),
         ),
-        actions: [
-          IconButton(
-            icon: const Icon(Icons.menu),
-            onPressed: () {
-              // ação do menu
-            },
-          ),
-        ],
       ),
       body: SingleChildScrollView(
         child: Padding(
@@ -169,7 +190,7 @@ class CourseDetailScreen extends StatelessWidget {
           ),
         ),
       ),
-      bottomNavigationBar: const Rodape(),
+      bottomNavigationBar: Rodape(workerNumber: _workerNumber),
     );
   }
 }

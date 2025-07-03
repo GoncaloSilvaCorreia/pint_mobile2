@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:pint_mobile/api/api_utilizador.dart';
+import 'package:pint_mobile/api/auth_service.dart';
 import 'package:pint_mobile/utils/auth_provider.dart';
 import 'package:provider/provider.dart';
 

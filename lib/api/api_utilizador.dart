@@ -1,61 +1,53 @@
 import 'dart:convert';
 import 'package:pint_mobile/models/utilizador.dart';
+import 'package:pint_mobile/api/api.dart'; // Importa ApiClient
 import 'package:shared_preferences/shared_preferences.dart';
-import 'api.dart';
 
-class AuthService {
+class ApiUtilizador {
   final ApiClient _apiClient = ApiClient();
 
-  Future<Utilizador> login(String email, String password) async {
-    final response = await _apiClient.post(
-      '/auth/login',
-      body: {'email': email, 'password': password},
-    );
-
+  /// Busca os dados completos do utilizador pelo workerNumber.
+  Future<Utilizador> getUtilizadorByWorkerNumber(String workerNumber) async {
+    final response = await _apiClient.get('/users/id/$workerNumber');
     if (response.statusCode == 200) {
       final data = jsonDecode(response.body);
-      
-      // Salvar token no SharedPreferences
-      final prefs = await SharedPreferences.getInstance();
-      await prefs.setString('token', data['token']);
-
-      // Salvar workerNumber no SharedPreferences
-      await prefs.setString('workerNumber', data['user']['workerNumber']);
-
-      // Retornar o utilizador logado com token incluído
-      return Utilizador.fromJson({
-        ...data['user'],
-        'token': data['token'],
-      });
+      return Utilizador.fromJson(data['user']);
     } else {
-      final errorData = jsonDecode(response.body);
-      throw Exception(errorData['message'] ?? 'Falha no login');
+      throw Exception('Erro ao carregar utilizador');
     }
   }
 
-  Future<String> getTrainerName(String trainerId) async {
-    final response = await _apiClient.get('/users');
-
+  /// Retorna a lista de cursos do utilizador pelo workerNumber.
+  Future<List<Map<String, dynamic>>> getCursosByWorkerNumber(String workerNumber) async {
+    final response = await _apiClient.get('/users/id/$workerNumber');
     if (response.statusCode == 200) {
       final data = jsonDecode(response.body);
-      // data é uma lista de users
-      final user = (data as List).firstWhere(
-        (u) => u['workerNumber'] == trainerId,
-        orElse: () => null,
-      );
-      if (user != null) {
-        return user['name'] ?? 'Desconhecido';
-      } else {
-        return 'Desconhecido';
-      }
+      List cursos = data['courses'];
+      return cursos.cast<Map<String, dynamic>>();
     } else {
-      throw Exception('Erro ao carregar formador');
+      throw Exception('Erro ao carregar cursos');
     }
   }
 
-  Future<void> logout() async {
+  /// Retorna a lista de interesses do utilizador pelo workerNumber.
+  Future<List<Map<String, dynamic>>> getInteressesByWorkerNumber(String workerNumber) async {
+    final response = await _apiClient.get('/users/id/$workerNumber');
+    if (response.statusCode == 200) {
+      final data = jsonDecode(response.body);
+      List interesses = data['interests'];
+      return interesses.cast<Map<String, dynamic>>();
+    } else {
+      throw Exception('Erro ao carregar interesses');
+    }
+  }
+
+  /// Busca o utilizador logado diretamente do SharedPreferences.
+  Future<Utilizador?> getUtilizadorLogado() async {
     final prefs = await SharedPreferences.getInstance();
-    await prefs.remove('token');
-    await prefs.remove('workerNumber'); // Remove também o workerNumber no logout
+    final workerNumber = prefs.getString('workerNumber');
+    if (workerNumber != null) {
+      return await getUtilizadorByWorkerNumber(workerNumber);
+    }
+    return null;
   }
 }

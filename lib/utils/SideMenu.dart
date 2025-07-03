@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
 import 'package:pint_mobile/utils/auth_provider.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 class SideMenu extends StatelessWidget {
   const SideMenu({super.key});
@@ -49,9 +50,9 @@ class SideMenu extends StatelessWidget {
                 title: const Text('Sair'),
                 trailing: const Icon(Icons.arrow_forward),
                 onTap: () {
-                  Navigator.of(context).pop(); //serve para fechar o sidemenu
-                  context.read<AuthProvider>().logout(); //faz o método logout do authprovider
-                  context.go('/Login'); //vai para a tela /Login
+                  Navigator.of(context).pop(); // Serve para fechar o menu lateral
+                  context.read<AuthProvider>().logout(); // Faz o método logout do authProvider
+                  context.go('/Login'); // Vai para a tela /Login
                 }
               ),
             ),
@@ -70,9 +71,23 @@ class SideMenu extends StatelessWidget {
       child: ListTile(
         leading: Icon(icon, color: selected ? Colors.indigo : Colors.black),
         title: Text(title, style: TextStyle(color: color)),
-        onTap: () {
+        onTap: () async {
+          // Obtém o workerNumber de SharedPreferences
+          SharedPreferences prefs = await SharedPreferences.getInstance();
+          String? workerNumber = prefs.getString('workerNumber');
+
+          // Fecha o menu lateral
           Navigator.of(context).pop();
-          context.go(route);
+
+          // Verifica se o workerNumber está presente e navega para a tela de perfil com o workerNumber
+          if (workerNumber != null) {
+            context.go('/perfil', extra: workerNumber);  // Passa workerNumber para a tela de perfil
+          } else {
+            // Caso não exista workerNumber, exibe uma mensagem de erro
+            ScaffoldMessenger.of(context).showSnackBar(
+              const SnackBar(content: Text('Erro: WorkerNumber não encontrado.'))
+            );
+          }
         },
       ),
     );

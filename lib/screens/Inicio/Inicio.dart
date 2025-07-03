@@ -1,16 +1,37 @@
 import 'package:flutter/material.dart';
-//import 'package:go_router/go_router.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'package:pint_mobile/utils/Rodape.dart';
 import 'package:pint_mobile/utils/SideMenu.dart';
 
-class TelaPrincipal extends StatelessWidget {
+class TelaPrincipal extends StatefulWidget {
   const TelaPrincipal({super.key});
+
+  @override
+  State<TelaPrincipal> createState() => _TelaPrincipalState();
+}
+
+class _TelaPrincipalState extends State<TelaPrincipal> {
+  String _workerNumber = '';
+
+  @override
+  void initState() {
+    super.initState();
+    _loadWorkerNumber();
+  }
+
+  Future<void> _loadWorkerNumber() async {
+    final prefs = await SharedPreferences.getInstance();
+    final workerNumber = prefs.getString('workerNumber') ?? '';
+    setState(() {
+      _workerNumber = workerNumber;
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: Colors.grey[300],
-      endDrawer: const SideMenu(),  // Menu lateral do lado direito
+      endDrawer: const SideMenu(),
 
       appBar: AppBar(
         backgroundColor: Colors.grey[300],
@@ -130,7 +151,7 @@ class TelaPrincipal extends StatelessWidget {
         ),
       ),
 
-      bottomNavigationBar: const Rodape(),
+      bottomNavigationBar: Rodape(workerNumber: _workerNumber),
     );
   }
 }

@@ -2,8 +2,10 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 
 class Rodape extends StatelessWidget {
-  const Rodape({super.key});
+  final String workerNumber;
 
+  const Rodape({super.key, required this.workerNumber});
+  
   @override
   Widget build(BuildContext context) {
     return BottomNavigationBar(
@@ -42,7 +44,7 @@ class Rodape extends StatelessWidget {
             context.go('/meus-cursos');
             break;
           case 3:
-            context.go('/perfil');
+            context.go('/perfil', extra: workerNumber);
             break;
         }
       },
