@@ -22,7 +22,7 @@ class Enrollment {
       workerNumber: json['workerNumber'] as String? ?? json['n_trabalhador'] as String? ?? '',
       enrollmentDate: DateTime.parse(json['enrollmentDate'] as String? ?? DateTime.now().toIso8601String()),
       status: json['status'] as String? ?? 'Pendente',
-      rating: json['rating'] != null ? (json['rating'] as num).toDouble() : null,
+      rating: json['rating'] != null ? double.parse(json['rating'].toString()) : null,
     );
   }
 

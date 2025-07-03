@@ -6,7 +6,7 @@ class EnrollmentService {
   final String baseUrl = 'https://pint-13nr.onrender.com/api'; // muda conforme necessário
 
   Future<List<Enrollment>> getEnrollments() async {
-    final response = await http.get(Uri.parse('$baseUrl/enrollments'));
+    final response = await http.get(Uri.parse('$baseUrl/inscricoes'));
 
     if (response.statusCode == 200) {
       final List<dynamic> data = json.decode(response.body);

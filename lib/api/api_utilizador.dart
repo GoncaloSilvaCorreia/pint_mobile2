@@ -18,7 +18,7 @@ class AuthService {
       // Salvar token no SharedPreferences
       final prefs = await SharedPreferences.getInstance();
       await prefs.setString('token', data['token']);
-      
+
       // Salvar workerNumber no SharedPreferences
       await prefs.setString('workerNumber', data['user']['workerNumber']);
 
@@ -30,6 +30,26 @@ class AuthService {
     } else {
       final errorData = jsonDecode(response.body);
       throw Exception(errorData['message'] ?? 'Falha no login');
+    }
+  }
+
+  Future<String> getTrainerName(String trainerId) async {
+    final response = await _apiClient.get('/users');
+
+    if (response.statusCode == 200) {
+      final data = jsonDecode(response.body);
+      // data é uma lista de users
+      final user = (data as List).firstWhere(
+        (u) => u['workerNumber'] == trainerId,
+        orElse: () => null,
+      );
+      if (user != null) {
+        return user['name'] ?? 'Desconhecido';
+      } else {
+        return 'Desconhecido';
+      }
+    } else {
+      throw Exception('Erro ao carregar formador');
     }
   }
 
