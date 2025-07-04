@@ -1,7 +1,7 @@
 class Course {
   final int id;
   final String title;
-  final bool type; // false=Síncrono, true=Assíncrono
+  final bool type; // false=Assíncrono, true= Síncrono
   final String description;
   final String instructor;
   final DateTime createdAt;
@@ -80,7 +80,7 @@ class Course {
       };
 
   // Métodos auxiliares
-  String get courseType => type ? 'Assíncrono' : 'Síncrono';
+  String get courseType => type ? 'Síncrono' : 'Assíncrono';
   String get statusName => status ? 'Ativo' : 'Inativo';
   String get visibleName => visible ? 'Visível' : 'Invisível';
 

@@ -143,7 +143,7 @@ class _CourseDetailScreenState extends State<CourseDetailScreen> {
                     const Icon(Icons.calendar_today),
                     const SizedBox(width: 8),
                     Text(
-                      DateFormat('dd/MM/yyyy').format(course.endDate),
+                      DateFormat('dd/MM/yyyy').format(course.startDate),
                       style: const TextStyle(fontSize: 16),
                     ),
                   ],

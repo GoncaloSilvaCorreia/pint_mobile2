@@ -26,6 +26,9 @@ class _PesquisaState extends State<Pesquisa> {
   bool? _selectedCourseType; // false = síncrono, true = assíncrono
   Topic? _selectedTopic;
   bool _isLoadingCourses = false;
+  String _searchQuery = '';
+  final TextEditingController _searchController = TextEditingController();
+  bool _isSearchMode = false;
 
   @override
   void initState() {
@@ -36,9 +39,43 @@ class _PesquisaState extends State<Pesquisa> {
     });
   }
 
+  @override
+  void dispose() {
+    _searchController.dispose();
+    super.dispose();
+  }
+
+  void _performSearch() {
+    final query = _searchController.text.trim();
+    if (query.isNotEmpty) {
+      setState(() {
+        _searchQuery = query;
+        _isSearchMode = true;
+        _currentStep = 'courses';
+      });
+    } else {
+      setState(() {
+        _isSearchMode = false;
+        _searchQuery = '';
+        _currentStep = 'categories';
+      });
+    }
+  }
+
+  void _resetSearch() {
+    setState(() {
+      _searchController.clear();
+      _searchQuery = '';
+      _isSearchMode = false;
+      _currentStep = 'categories';
+    });
+  }
+
   void _goBack() {
     setState(() {
-      if (_currentStep == 'courses') {
+      if (_isSearchMode) {
+        _resetSearch();
+      } else if (_currentStep == 'courses') {
         _currentStep = 'types';
       } else if (_currentStep == 'types') {
         _currentStep = 'topics';
@@ -70,7 +107,7 @@ class _PesquisaState extends State<Pesquisa> {
       appBar: AppBar(
         backgroundColor: Colors.grey[300],
         title: const Text('Pesquisa'),
-        leading: _currentStep != 'categories'
+        leading: _currentStep != 'categories' || _isSearchMode
             ? IconButton(
                 icon: const Icon(Icons.arrow_back),
                 onPressed: _goBack,
@@ -82,17 +119,47 @@ class _PesquisaState extends State<Pesquisa> {
           Padding(
             padding: const EdgeInsets.all(16.0),
             child: TextField(
+              controller: _searchController,
+              onSubmitted: (value) => _performSearch(), // Adicionado para capturar Enter
               decoration: InputDecoration(
-                hintText: 'Pesquisar ...',
-                prefixIcon: const Icon(Icons.search),
+                hintText: 'Pesquisar cursos...',
+                prefixIcon: IconButton(
+                  icon: const Icon(Icons.search),
+                  onPressed: _performSearch,
+                ),
                 border: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(8.0),
                 ),
+                suffixIcon: _searchController.text.isNotEmpty
+                    ? IconButton(
+                        icon: const Icon(Icons.clear),
+                        onPressed: _resetSearch,
+                      )
+                    : null,
               ),
             ),
           ),
+          
+          if (_isSearchMode)
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 16.0),
+              child: Row(
+                children: [
+                  Chip(
+                    label: Text('Pesquisa: "$_searchQuery"'),
+                    backgroundColor: Colors.blue[100],
+                  ),
+                  const Spacer(),
+                  TextButton(
+                    onPressed: _resetSearch,
+                    child: const Text('Limpar pesquisa'),
+                  ),
+                ],
+              ),
+            ),
+          
           Expanded(
-            child: _buildCurrentStep(),
+            child: _isSearchMode ? _buildSearchResults() : _buildCurrentStep(),
           ),
         ],
       ),
@@ -235,7 +302,78 @@ class _PesquisaState extends State<Pesquisa> {
               children: [
                 Text('Tipo: ${course.courseType}'),
                 Text('Nível: ${course.level}'),
-                Text('Data: ${DateFormat('dd/MM/yyyy').format(course.startDate)} - ${DateFormat('dd/MM/yyyy').format(course.endDate)}'),
+                Text('Início: ${DateFormat('dd/MM/yyyy').format(course.startDate)}'),
+              ],
+            ),
+            onTap: () async {
+              SharedPreferences prefs = await SharedPreferences.getInstance();
+              String? userWorkerNumber = prefs.getString('workerNumber');
+
+              if (userWorkerNumber == null) {
+                ScaffoldMessenger.of(context).showSnackBar(
+                  const SnackBar(content: Text('Erro: Utilizador não encontrado.')),
+                );
+                return;
+              }
+
+              Enrollment? enrollment = await _searchManager.getEnrollmentForCourseAndUser(
+                course.id,
+                userWorkerNumber,
+              );
+
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (context) => CourseDetailScreen(
+                    course: course,
+                    enrollment: enrollment,
+                  ),
+                ),
+              );
+            },
+          ),
+        );
+      },
+    );
+  }
+
+  // Método para mostrar resultados da pesquisa direta
+  Widget _buildSearchResults() {
+    // Usa o getter público allCourses
+    final results = _searchManager.allCourses.where((course) {
+      return course.title.toLowerCase().contains(_searchQuery.toLowerCase());
+    }).toList();
+    
+    if (results.isEmpty) {
+      return Center(
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            const Icon(Icons.search_off, size: 48, color: Colors.grey),
+            const SizedBox(height: 16),
+            Text(
+              'Nenhum curso encontrado para "$_searchQuery"',
+              style: const TextStyle(fontSize: 18, color: Colors.grey),
+            ),
+          ],
+        ),
+      );
+    }
+
+    return ListView.builder(
+      itemCount: results.length,
+      itemBuilder: (context, index) {
+        final course = results[index];
+        return Card(
+          margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+          child: ListTile(
+            title: Text(course.title),
+            subtitle: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text('Tipo: ${course.courseType}'),
+                Text('Nível: ${course.level}'),
+                Text('Início: ${DateFormat('dd/MM/yyyy').format(course.startDate)}'),
               ],
             ),
             onTap: () async {

@@ -19,11 +19,13 @@ class SearchManager {
   List<Category> _categories = [];
   List<Area> _areas = []; 
   List<Topic> _topics = [];
-  List<Course> _allCourses = []; // Alterado para todos os cursos visíveis
+  List<Course> _allCourses = []; // Lista privada
 
+  // Getters públicos para acessar as listas
   List<Category> get categories => _categories;
   List<Area> get areas => _areas;
   List<Topic> get topics => _topics;
+  List<Course> get allCourses => _allCourses; // Getter público
 
   Future<void> initialize() async {
     _categories = await _categoryService.getCategories();
