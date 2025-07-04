@@ -3,10 +3,8 @@ import 'package:intl/intl.dart';
 import 'dart:convert';
 import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';
-
 import 'package:pint_mobile/utils/Rodape.dart';
 import 'package:pint_mobile/utils/SideMenu.dart';
-
 import 'package:pint_mobile/models/curso.dart';
 import 'package:pint_mobile/models/inscricoes.dart';
 
@@ -66,8 +64,8 @@ class _CourseDetailScreenState extends State<CourseDetailScreen> {
 
     bool inscritoPendente = enrollment != null && enrollment.status == "Pendente";
     bool inscritoAtivo = enrollment != null && enrollment.status == "Ativo";
-    bool cursoJaComecou = course.startDate.isBefore(DateTime.now());
     bool semVagas = course.vacancies != null && course.vacancies == 0;
+    bool podeInscrever = course.enrollmentsOpen && !semVagas && !inscritoPendente && !inscritoAtivo;
 
     return Scaffold(
       endDrawer: const SideMenu(),
@@ -84,7 +82,6 @@ class _CourseDetailScreenState extends State<CourseDetailScreen> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              // Imagem
               Center(
                 child: ClipRRect(
                   borderRadius: BorderRadius.circular(8),
@@ -98,14 +95,12 @@ class _CourseDetailScreenState extends State<CourseDetailScreen> {
               ),
               const SizedBox(height: 16),
 
-              // Título
               Text(
                 course.title,
                 style: const TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
               ),
               const SizedBox(height: 8),
 
-              // Formador com FutureBuilder
               FutureBuilder<String>(
                 future: getTrainerName(course.instructor),
                 builder: (context, snapshot) {
@@ -129,7 +124,6 @@ class _CourseDetailScreenState extends State<CourseDetailScreen> {
               ),
               const SizedBox(height: 16),
 
-              // Descrição
               const Text("Descrição", style: TextStyle(fontWeight: FontWeight.bold)),
               const SizedBox(height: 4),
               Text(
@@ -138,7 +132,6 @@ class _CourseDetailScreenState extends State<CourseDetailScreen> {
               ),
               const SizedBox(height: 16),
 
-              // Data limite
               Container(
                 padding: const EdgeInsets.all(12),
                 decoration: BoxDecoration(
@@ -158,7 +151,6 @@ class _CourseDetailScreenState extends State<CourseDetailScreen> {
               ),
               const SizedBox(height: 16),
 
-              // Estado inscrição
               if (inscritoAtivo)
                 const Text("Já estás inscrito neste curso.",
                     style: TextStyle(color: Colors.green)),
@@ -168,23 +160,27 @@ class _CourseDetailScreenState extends State<CourseDetailScreen> {
 
               const SizedBox(height: 16),
 
-              // Botão de inscrição
               if (!inscritoAtivo && !inscritoPendente)
                 SizedBox(
                   width: double.infinity,
                   child: ElevatedButton(
-                    onPressed: (cursoJaComecou || semVagas) ? null : () {
+                    onPressed: podeInscrever ? () {
                       // ação para inscrever
-                    },
+                    } : null,
                     child: const Text("Inscrever"),
                   ),
                 ),
 
-              if (cursoJaComecou)
-                const Text("Este curso já começou.",
+              if (!course.enrollmentsOpen)
+                const Text("Inscrições encerradas para este curso.",
                     style: TextStyle(color: Colors.red)),
+                    
               if (semVagas)
                 const Text("Este curso não tem vagas disponíveis.",
+                    style: TextStyle(color: Colors.red)),
+                    
+              if (!course.status && !course.type)
+                const Text("Este curso já terminou.",
                     style: TextStyle(color: Colors.red)),
             ],
           ),

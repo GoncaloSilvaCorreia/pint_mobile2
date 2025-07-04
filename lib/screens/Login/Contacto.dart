@@ -1,9 +1,106 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
-//import 'package:pint/api/api.dart';
 
-class Contacto extends StatelessWidget {
+class Contacto extends StatefulWidget {
   const Contacto({super.key});
+
+  @override
+  State<Contacto> createState() => _ContactoState();
+}
+
+class _ContactoState extends State<Contacto> {
+  final _workerNumberController = TextEditingController();
+  final _fullNameController = TextEditingController();
+  final _emailController = TextEditingController();
+  final _subjectController = TextEditingController();
+  final _messageController = TextEditingController();
+
+  String? _workerNumberError;
+  String? _fullNameError;
+  String? _emailError;
+  String? _subjectError;
+  String? _messageError;
+
+  bool _isLoading = false;
+
+  Future<void> _handleSubmit() async {
+    setState(() {
+      _workerNumberError = null;
+      _fullNameError = null;
+      _emailError = null;
+      _subjectError = null;
+      _messageError = null;
+    });
+
+    String workerNumber = _workerNumberController.text.trim();
+    String fullName = _fullNameController.text.trim();
+    String email = _emailController.text.trim();
+    String subject = _subjectController.text.trim();
+    String message = _messageController.text.trim();
+
+    bool hasError = false;
+
+    if (workerNumber.isEmpty) {
+      setState(() {
+        _workerNumberError = 'Por favor, insira o Nº de Trabalhador.';
+      });
+      hasError = true;
+    }
+
+    if (fullName.isEmpty) {
+      setState(() {
+        _fullNameError = 'Por favor, insira o Nome Completo.';
+      });
+      hasError = true;
+    }
+
+    if (email.isEmpty) {
+      setState(() {
+        _emailError = 'Por favor, insira o seu e-mail Institucional.';
+      });
+      hasError = true;
+    }
+
+    if (subject.isEmpty) {
+      setState(() {
+        _subjectError = 'Por favor, insira o Assunto.';
+      });
+      hasError = true;
+    }
+
+    if (message.isEmpty) {
+      setState(() {
+        _messageError = 'Por favor, insira a Mensagem.';
+      });
+      hasError = true;
+    }
+
+    if (hasError) return;
+
+    setState(() => _isLoading = true);
+
+    try {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Formulário enviado com sucesso!')),
+      );
+    } catch (e) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Erro: ${e.toString()}')),
+      );
+    } finally {
+      setState(() => _isLoading = false);
+    }
+  }
+
+  @override
+  void dispose() {
+    _workerNumberController.dispose();
+    _fullNameController.dispose();
+    _emailController.dispose();
+    _subjectController.dispose();
+    _messageController.dispose();
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -47,48 +144,59 @@ class Contacto extends StatelessWidget {
               ),
             ),
             const SizedBox(height: 32),
+            const Text('Número Trabalhador'),
+            const SizedBox(height: 4),
+            TextField(
+              controller: _workerNumberController,
+              decoration: InputDecoration(
+                hintText: 'Insira o Nº de Trabalhador',
+                border: const OutlineInputBorder(),
+                errorText: _workerNumberError,
+              ),
+            ),
+            const SizedBox(height: 16),
             const Text('Nome completo'),
             const SizedBox(height: 4),
-            const TextField(
+            TextField(
+              controller: _fullNameController,
               decoration: InputDecoration(
-                hintText: 'Insira o primeiro e último nome',
-                border: OutlineInputBorder(),
+                hintText: 'Insira o Primeiro e Último Nome',
+                border: const OutlineInputBorder(),
+                errorText: _fullNameError,
               ),
             ),
             const SizedBox(height: 16),
             const Text('Email'),
             const SizedBox(height: 4),
-            const TextField(
+            TextField(
+              controller: _emailController,
               decoration: InputDecoration(
-                hintText: 'Insira o seu e-mail institucional',
-                border: OutlineInputBorder(),
+                hintText: 'Insira o seu e-mail Institucional',
+                border: const OutlineInputBorder(),
+                errorText: _emailError,
               ),
             ),
             const SizedBox(height: 16),
             const Text('Assunto'),
             const SizedBox(height: 4),
-            const TextField(
+            TextField(
+              controller: _subjectController,
               decoration: InputDecoration(
-                hintText: 'Mencione o motivo pelo contacto',
-                border: OutlineInputBorder(),
+                hintText: 'Mencione o motivo pelo Contacto',
+                border: const OutlineInputBorder(),
+                errorText: _subjectError,
               ),
             ),
             const SizedBox(height: 16),
             const Text('Mensagem'),
             const SizedBox(height: 4),
-            const TextField(
+            TextField(
+              controller: _messageController,
               maxLines: 4,
               decoration: InputDecoration(
-                hintText: 'Escreva aqui o seu pedido ou sugestão',
-                border: OutlineInputBorder(),
-              ),
-            ),
-            const SizedBox(height: 8),
-            TextButton(
-              onPressed: () => context.go('/Reset'),
-              child: const Text(
-                'Esqueci-me dos dados',
-                style: TextStyle(color: Colors.cyan),
+                hintText: 'Escreva aqui o seu Pedido ou Sugestão',
+                border: const OutlineInputBorder(),
+                errorText: _messageError,
               ),
             ),
             const SizedBox(height: 8),
@@ -99,8 +207,10 @@ class Contacto extends StatelessWidget {
                 style: ElevatedButton.styleFrom(
                   backgroundColor: Colors.indigo,
                 ),
-                onPressed: () {},
-                child: const Text('Enviar formulário', style: TextStyle(color: Colors.white),),
+                onPressed: _isLoading ? null : _handleSubmit,
+                child: _isLoading
+                    ? const CircularProgressIndicator(color: Colors.white)
+                    : const Text('Enviar formulário', style: TextStyle(color: Colors.white)),
               ),
             ),
           ],

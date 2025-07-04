@@ -1,7 +1,6 @@
 import 'package:pint_mobile/models/area.dart';
 import 'package:pint_mobile/models/categoria.dart';
 import 'package:pint_mobile/models/inscricoes.dart';
-//import 'package:pint_mobile/models/areas_all.dart';
 import 'package:pint_mobile/models/topico.dart';
 import 'package:pint_mobile/models/curso.dart';
 
@@ -20,8 +19,7 @@ class SearchManager {
   List<Category> _categories = [];
   List<Area> _areas = []; 
   List<Topic> _topics = [];
-  List<Course> _courses = [];
-
+  List<Course> _allCourses = []; // Alterado para todos os cursos visíveis
 
   List<Category> get categories => _categories;
   List<Area> get areas => _areas;
@@ -31,11 +29,13 @@ class SearchManager {
     _categories = await _categoryService.getCategories();
     _areas = await _areaService.getAreas();
     _topics = await _topicService.getTopics();
+    
+    // Carrega todos os cursos visíveis
+    _allCourses = await _courseService.getAllVisibleCourses();
   }
 
   Future<List<Course>> getCoursesByTopic(int topicId) async {
-    _courses = await _courseService.getCoursesByTopic(topicId);
-    return _courses;
+    return _allCourses.where((course) => course.topicId == topicId).toList();
   }
 
   List<Area> getAreasForCategory(int categoryId) {
@@ -47,15 +47,15 @@ class SearchManager {
   }
 
   List<Course> filterCoursesByType(bool? isAsync) {
-    if (isAsync == null) return _courses; // Mostra todos
-    return _courses.where((course) => course.type == isAsync).toList();
+    if (isAsync == null) return _allCourses; // Mostra todos
+    return _allCourses.where((course) => course.type == isAsync).toList();
   }
 
   List<Course> filterCoursesByTopicAndType(int? topicId, bool? isAsync) {
-    return _courses.where((course) {
+    return _allCourses.where((course) {
       final matchesTopic = topicId == null || course.topicId == topicId;
       final matchesType = isAsync == null || course.type == isAsync;
-      return matchesTopic && matchesType;
+      return matchesTopic && matchesType && course.shouldDisplayInSearch;
     }).toList();
   }
 
@@ -63,7 +63,9 @@ class SearchManager {
     List<Enrollment> allEnrollments = await EnrollmentService().getEnrollments();
 
     try {
-      return allEnrollments.firstWhere((e) => e.courseId == courseId && e.workerNumber == workerNumber);
+      return allEnrollments.firstWhere(
+        (e) => e.courseId == courseId && e.workerNumber == workerNumber
+      );
     } catch (_) {
       return null; // não inscrito
     }

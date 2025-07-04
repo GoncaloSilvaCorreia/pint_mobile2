@@ -1,18 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-
 import 'package:pint_mobile/api/api_pesquisa.dart';
-
-//import 'package:pint_mobile/models/topico.dart';
 import 'package:pint_mobile/models/categoria.dart';
 import 'package:pint_mobile/models/area.dart';
 import 'package:pint_mobile/models/topico.dart';
 import 'package:pint_mobile/models/inscricoes.dart';
-
 import 'package:pint_mobile/utils/Rodape.dart';
 import 'package:pint_mobile/utils/SideMenu.dart';
-
 import 'package:pint_mobile/screens/Curso/Curso.dart';
 
 class Pesquisa extends StatefulWidget {
@@ -84,7 +79,6 @@ class _PesquisaState extends State<Pesquisa> {
       ),
       body: Column(
         children: [
-          // Campo de pesquisa
           Padding(
             padding: const EdgeInsets.all(16.0),
             child: TextField(
@@ -97,8 +91,6 @@ class _PesquisaState extends State<Pesquisa> {
               ),
             ),
           ),
-          
-          // Conteúdo principal
           Expanded(
             child: _buildCurrentStep(),
           ),
@@ -184,15 +176,10 @@ class _PesquisaState extends State<Pesquisa> {
         return ListTile(
           title: Text(topic.description),
           trailing: const Icon(Icons.arrow_forward_ios),
-          onTap: () async {
-            setState(() => _isLoadingCourses = true);
-            
-            await _searchManager.getCoursesByTopic(topic.id);
-            
+          onTap: () {
             setState(() {
               _selectedTopic = topic;
               _currentStep = 'types';
-              _isLoadingCourses = false;
             });
           },
         );
@@ -226,7 +213,10 @@ class _PesquisaState extends State<Pesquisa> {
   }
   
   Widget _buildCourseList() {
-    final courses = _searchManager.filterCoursesByTopicAndType( _selectedTopic?.id, _selectedCourseType,);
+    final courses = _searchManager.filterCoursesByTopicAndType(
+      _selectedTopic?.id,
+      _selectedCourseType,
+    );
     
     if (courses.isEmpty) {
       return const Center(child: Text('Nenhum curso disponível'));
@@ -249,7 +239,6 @@ class _PesquisaState extends State<Pesquisa> {
               ],
             ),
             onTap: () async {
-              // Buscar workerNumber
               SharedPreferences prefs = await SharedPreferences.getInstance();
               String? userWorkerNumber = prefs.getString('workerNumber');
 
@@ -260,13 +249,11 @@ class _PesquisaState extends State<Pesquisa> {
                 return;
               }
 
-              // Buscar inscrição do utilizador neste curso
               Enrollment? enrollment = await _searchManager.getEnrollmentForCourseAndUser(
                 course.id,
                 userWorkerNumber,
               );
 
-              // Navegar para detalhe do curso
               Navigator.push(
                 context,
                 MaterialPageRoute(

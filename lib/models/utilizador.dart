@@ -36,9 +36,14 @@ class Utilizador {
             : [],
         primaryRole: userData['primaryRole'] as String?,
         workerNumber: (userData['workerNumber'] as String?) ?? '',
-        token: token, // garante sempre valor
+        token: token,
         pfp: userData['pfp'],
-        interests: (userData['interests'] as List?)?.map((e) => e as Map<String, dynamic>).toList() ?? [],  // Adicionando interesses
+        interests: (userData['interests'] as List?)
+            ?.map((e) => {
+                  'id': e['id'],
+                  'description': e['topic']['description'] ?? 'Sem descrição',
+                })
+            .toList() ?? [],
       );
     } catch (e) {
       print('Erro ao criar Utilizador: $e');

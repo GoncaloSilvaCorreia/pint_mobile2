@@ -14,4 +14,17 @@ class CourseService {
       throw Exception('Falha ao carregar cursos');
     }
   }
+
+  // Novo método: busca todos os cursos visíveis
+  Future<List<Course>> getAllVisibleCourses() async {
+    final response = await _apiClient.get('/cursos');
+    if (response.statusCode == 200) {
+      List<dynamic> body = jsonDecode(response.body);
+      return body.map((item) => Course.fromJson(item))
+                 .where((course) => course.visible)
+                 .toList();
+    } else {
+      throw Exception('Falha ao carregar cursos');
+    }
+  }
 }

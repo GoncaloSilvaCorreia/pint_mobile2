@@ -6,7 +6,8 @@ class Course {
   final String instructor;
   final DateTime createdAt;
   final DateTime? updatedAt;
-  final int status; // 0=Inativo, 1=Ativo
+  final bool status; // false=Inativo, true=Ativo
+  final bool visible; // false=Invisivel, true=Visivel
   final int topicId;
   final String level; // Básico, Intermédio, Avançado
   final String? image;
@@ -14,6 +15,7 @@ class Course {
   final DateTime endDate;
   final int? hours;
   final int? vacancies;
+  final bool enrollmentsOpen; // Novo campo: inscricoes
 
   Course({
     required this.id,
@@ -24,6 +26,7 @@ class Course {
     required this.createdAt,
     this.updatedAt,
     required this.status,
+    required this.visible,
     required this.topicId,
     required this.level,
     this.image,
@@ -31,6 +34,7 @@ class Course {
     required this.endDate,
     this.hours,
     this.vacancies,
+    required this.enrollmentsOpen,
   });
 
   factory Course.fromJson(Map<String, dynamic> json) {
@@ -42,7 +46,8 @@ class Course {
       instructor: json['instructor'] as String? ?? '',
       createdAt: DateTime.parse(json['createdAt'] as String? ?? DateTime.now().toIso8601String()),
       updatedAt: json['updatedAt'] != null ? DateTime.parse(json['updatedAt'] as String) : null,
-      status: json['status'] as int? ?? 1,
+      status: json['status'] as bool? ?? false,
+      visible: json['visible'] as bool? ?? false,
       topicId: json['topic'] != null ? json['topic']['id'] as int : 0,
       level: json['level'] as String? ?? 'Básico',
       image: json['image'] as String?,
@@ -50,6 +55,7 @@ class Course {
       endDate: DateTime.parse(json['endDate'] as String? ?? DateTime.now().toIso8601String()),
       hours: json['hours'] as int?,
       vacancies: json['vacancies'] as int?,
+      enrollmentsOpen: json['inscricoes'] as bool? ?? false,
     );
   }
 
@@ -62,6 +68,7 @@ class Course {
         'createdAt': createdAt.toIso8601String(),
         'updatedAt': updatedAt?.toIso8601String(),
         'status': status,
+        'visible': visible,
         'topicId': topicId,
         'level': level,
         'image': image,
@@ -69,10 +76,25 @@ class Course {
         'endDate': endDate.toIso8601String(),
         'hours': hours,
         'vacancies': vacancies,
+        'enrollmentsOpen': enrollmentsOpen,
       };
 
   // Métodos auxiliares
   String get courseType => type ? 'Assíncrono' : 'Síncrono';
-  String get statusName => status == 1 ? 'Ativo' : 'Inativo';
+  String get statusName => status ? 'Ativo' : 'Inativo';
+  String get visibleName => visible ? 'Visível' : 'Invisível';
+
   bool get hasVacancies => vacancies == null || vacancies! > 0;
+  
+  // Verifica se o curso pode ser exibido na pesquisa
+  bool get shouldDisplayInSearch {
+    if (!visible) return false;
+    
+    // Cursos síncronos: mostrar se estiverem ativos OU com inscrições abertas
+    if (!type) {
+      return status || enrollmentsOpen;
+    }
+    // Cursos assíncronos: mostrar apenas se estiverem ativos
+    return status;
+  }
 }

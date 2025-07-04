@@ -36,7 +36,6 @@ class SideMenu extends StatelessWidget {
                 children: [
                   _buildMenuItem(context, Icons.library_books, 'Cursos', '/cursos', selected: true),
                   _buildMenuItem(context, Icons.bookmark, 'Meus cursos', '/meus-cursos'),
-                  _buildMenuItem(context, Icons.person, 'Formadores', '/formadores'),
                   _buildMenuItem(context, Icons.forum, 'Fórum', '/forum'),
                   _buildMenuItem(context, Icons.account_circle, 'Perfil', '/perfil'),
                 ],

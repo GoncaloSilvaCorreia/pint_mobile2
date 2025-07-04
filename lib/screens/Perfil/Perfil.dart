@@ -65,31 +65,23 @@ class PerfilScreenState extends State<Perfil> {
                   Text('E-mail: ${utilizador.email}'),
                   SizedBox(height: 20),
 
-                  // Exibindo os interesses (corrigido para usar a lista de interesses)
+                  // Exibindo os interesses como texto simples
                   const Text(
                     'As minhas preferências',
                     style: TextStyle(fontWeight: FontWeight.bold),
                   ),
                   SizedBox(height: 8),
-                  Wrap(
-                    spacing: 8.0,
-                    runSpacing: 4.0,
+                  Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
                     children: utilizador.interests
                         .map(
-                          (interesse) => Chip(
-                            label: Text(interesse['topic']['description']),
-                            backgroundColor: Colors.blueAccent,
-                            labelStyle: TextStyle(color: Colors.white),
-                            deleteIcon: Icon(Icons.close, size: 18),
-                            deleteIconColor: Colors.white,
-                            onDeleted: () {
-                              // Aqui você pode implementar a lógica de remoção de interesses
-                            },
+                          (interesse) => Text(
+                            interesse['description'], // Agora acessível corretamente
+                            style: TextStyle(fontSize: 16),
                           ),
                         )
                         .toList(),
                   ),
-
                   // Cursos concluídos (exemplo de visualização)
                   const SizedBox(height: 20),
                   const Text(
