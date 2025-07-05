@@ -1,6 +1,6 @@
 import 'dart:convert';
 import 'package:pint_mobile/models/utilizador.dart';
-import 'package:pint_mobile/api/api.dart'; // Importa ApiClient
+import 'package:pint_mobile/api/api.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 class ApiUtilizador {
@@ -11,7 +11,20 @@ class ApiUtilizador {
     final response = await _apiClient.get('/users/id/$workerNumber');
     if (response.statusCode == 200) {
       final data = jsonDecode(response.body);
-      return Utilizador.fromJson(data['user']);
+      
+      // Obtém o token das SharedPreferences
+      final prefs = await SharedPreferences.getInstance();
+      final token = prefs.getString('token') ?? '';
+      
+      // Combina os dados do usuário com os interesses e token
+      final userData = data['user'] as Map<String, dynamic>;
+      final combinedData = {
+        ...userData,
+        'interests': data['interests'],  // Injeta os interesses
+        'token': token,  // Adiciona o token
+      };
+      
+      return Utilizador.fromJson(combinedData);
     } else {
       throw Exception('Erro ao carregar utilizador');
     }

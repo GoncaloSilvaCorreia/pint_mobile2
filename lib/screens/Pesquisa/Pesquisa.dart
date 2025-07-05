@@ -25,7 +25,7 @@ class _PesquisaState extends State<Pesquisa> {
   Area? _selectedArea;
   bool? _selectedCourseType; // false = síncrono, true = assíncrono
   Topic? _selectedTopic;
-  bool _isLoadingCourses = false;
+  //bool _isLoadingCourses = false;
   String _searchQuery = '';
   final TextEditingController _searchController = TextEditingController();
   bool _isSearchMode = false;

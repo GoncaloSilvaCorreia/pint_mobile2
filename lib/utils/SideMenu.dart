@@ -30,11 +30,11 @@ class SideMenu extends StatelessWidget {
                 ],
               ),
             ),
-            // Itens do menu
+            // Itens do menu (todos com a mesma aparência)
             Expanded(
               child: ListView(
                 children: [
-                  _buildMenuItem(context, Icons.library_books, 'Cursos', '/cursos', selected: true),
+                  _buildMenuItem(context, Icons.library_books, 'Cursos', '/pesquisar'),
                   _buildMenuItem(context, Icons.bookmark, 'Meus cursos', '/meus-cursos'),
                   _buildMenuItem(context, Icons.forum, 'Fórum', '/forum'),
                   _buildMenuItem(context, Icons.account_circle, 'Perfil', '/perfil'),
@@ -49,9 +49,9 @@ class SideMenu extends StatelessWidget {
                 title: const Text('Sair'),
                 trailing: const Icon(Icons.arrow_forward),
                 onTap: () {
-                  Navigator.of(context).pop(); // Serve para fechar o menu lateral
-                  context.read<AuthProvider>().logout(); // Faz o método logout do authProvider
-                  context.go('/Login'); // Vai para a tela /Login
+                  Navigator.of(context).pop();
+                  context.read<AuthProvider>().logout();
+                  context.go('/Login');
                 }
               ),
             ),
@@ -61,34 +61,32 @@ class SideMenu extends StatelessWidget {
     );
   }
 
-  Widget _buildMenuItem(BuildContext context, IconData icon, String title, String route, {bool selected = false}) {
-    final color = selected ? Colors.indigo.shade100 : Colors.black;
-    final bgColor = selected ? Colors.indigo.shade100.withOpacity(0.5) : Colors.transparent;
+  Widget _buildMenuItem(BuildContext context, IconData icon, String title, String route) {
+    return ListTile(
+      leading: Icon(icon, color: Colors.black),
+      title: Text(title, style: const TextStyle(color: Colors.black)),
+      onTap: () async {
+        // Obtém o workerNumber de SharedPreferences
+        SharedPreferences prefs = await SharedPreferences.getInstance();
+        String? workerNumber = prefs.getString('workerNumber');
 
-    return Container(
-      color: bgColor,
-      child: ListTile(
-        leading: Icon(icon, color: selected ? Colors.indigo : Colors.black),
-        title: Text(title, style: TextStyle(color: color)),
-        onTap: () async {
-          // Obtém o workerNumber de SharedPreferences
-          SharedPreferences prefs = await SharedPreferences.getInstance();
-          String? workerNumber = prefs.getString('workerNumber');
+        // Fecha o menu lateral
+        Navigator.of(context).pop();
 
-          // Fecha o menu lateral
-          Navigator.of(context).pop();
-
-          // Verifica se o workerNumber está presente e navega para a tela de perfil com o workerNumber
-          if (workerNumber != null) {
-            context.go('/perfil', extra: workerNumber);  // Passa workerNumber para a tela de perfil
+        // Verifica se o workerNumber está presente
+        if (workerNumber != null) {
+          // Navegação para diferentes rotas
+          if (route == '/perfil') {
+            context.go('/perfil', extra: workerNumber);
           } else {
-            // Caso não exista workerNumber, exibe uma mensagem de erro
-            ScaffoldMessenger.of(context).showSnackBar(
-              const SnackBar(content: Text('Erro: WorkerNumber não encontrado.'))
-            );
+            context.go(route);
           }
-        },
-      ),
+        } else {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(content: Text('Erro: WorkerNumber não encontrado.'))
+          );
+        }
+      },
     );
   }
 }
