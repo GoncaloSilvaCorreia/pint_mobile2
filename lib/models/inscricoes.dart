@@ -1,3 +1,5 @@
+import 'package:pint_mobile/models/curso.dart';
+
 class Enrollment {
   final int id;
   final int courseId;
@@ -5,6 +7,7 @@ class Enrollment {
   final DateTime enrollmentDate;
   final String status;
   final double? rating;
+  final Course course; // Novo campo adicionado
 
   Enrollment({
     required this.id,
@@ -13,6 +16,7 @@ class Enrollment {
     required this.enrollmentDate,
     required this.status,
     this.rating,
+    required this.course,
   });
 
   factory Enrollment.fromJson(Map<String, dynamic> json) {
@@ -23,6 +27,7 @@ class Enrollment {
       enrollmentDate: DateTime.parse(json['enrollmentDate'] as String? ?? DateTime.now().toIso8601String()),
       status: json['status'] as String? ?? 'Pendente',
       rating: json['rating'] != null ? double.parse(json['rating'].toString()) : null,
+      course: Course.fromJson(json['course']),
     );
   }
 
@@ -33,5 +38,6 @@ class Enrollment {
         'enrollmentDate': enrollmentDate.toIso8601String(),
         'status': status,
         'rating': rating,
+        'course': course.toJson(),
       };
 }

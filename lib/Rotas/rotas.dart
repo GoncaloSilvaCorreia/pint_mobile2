@@ -1,9 +1,11 @@
+import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:pint_mobile/screens/Login/Login.dart';
 import 'package:pint_mobile/screens/Login/Contacto.dart';
 import 'package:pint_mobile/screens/Login/Reset.dart';
 import 'package:pint_mobile/screens/Inicio/Inicio.dart';
 import 'package:pint_mobile/screens/Perfil/Perfil.dart';
+import 'package:pint_mobile/screens/Curso/MeusCursos.dart';
 import 'package:provider/provider.dart';
 import 'package:pint_mobile/utils/auth_provider.dart';
 import 'package:pint_mobile/screens/Pesquisa/Pesquisa.dart';
@@ -41,6 +43,10 @@ final rotas = GoRouter(
         final workerNumber = state.extra as String?;
         return Perfil(workerNumber: workerNumber ?? '');
       },
+    ),
+    GoRoute(
+      path: '/meus-cursos',
+      builder: (context, state) => const MeusCursos(),
     ),
   ],
   redirect: (context, state) {
