@@ -5,7 +5,7 @@ class Utilizador {
   final List<String> roles;
   final String? primaryRole;
   final String workerNumber;
-  final String token; // tornar obrigatório
+  final String token;
   final String? pfp;
   final List<Map<String, dynamic>> interests;
 
@@ -16,7 +16,7 @@ class Utilizador {
     required this.roles,
     this.primaryRole,
     required this.workerNumber,
-    required this.token, // obrigatório
+    required this.token,
     this.pfp,
     required this.interests,
   });

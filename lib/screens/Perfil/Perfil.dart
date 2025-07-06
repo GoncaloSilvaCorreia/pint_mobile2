@@ -39,6 +39,7 @@ class PerfilScreenState extends State<Perfil> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+    
       appBar: AppBar(title: const Text('Meu perfil')),
       endDrawer: const SideMenu(),
       body: FutureBuilder<Utilizador>(

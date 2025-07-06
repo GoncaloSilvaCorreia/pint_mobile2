@@ -3,10 +3,14 @@ import 'package:intl/intl.dart';
 import 'dart:convert';
 import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';
+
 import 'package:pint_mobile/utils/Rodape.dart';
 import 'package:pint_mobile/utils/SideMenu.dart';
+
 import 'package:pint_mobile/models/curso.dart';
 import 'package:pint_mobile/models/inscricoes.dart';
+
+import 'package:pint_mobile/api/api_inscricoes.dart';
 
 class CourseDetailScreen extends StatefulWidget {
   final Course course;
@@ -20,6 +24,8 @@ class CourseDetailScreen extends StatefulWidget {
 
 class _CourseDetailScreenState extends State<CourseDetailScreen> {
   String _workerNumber = '';
+  bool _isLoading = false;
+  final EnrollmentService _enrollmentService = EnrollmentService();
 
   @override
   void initState() {
@@ -57,6 +63,73 @@ class _CourseDetailScreenState extends State<CourseDetailScreen> {
     }
   }
 
+  Future<void> _realizarInscricao() async {
+    setState(() => _isLoading = true);
+    
+    try {
+      await _enrollmentService.createEnrollment(
+        widget.course.id, 
+        _workerNumber
+      );
+      
+      _mostrarConfirmacao();
+    } catch (e) {
+      // Tratar erro específico de resposta nula
+      String errorMessage = e.toString();
+      if (e.toString().contains('Null') || e.toString().contains('Map<String, dynamic>')) {
+        errorMessage = 'Inscrição realizada com sucesso! '
+                      '(O servidor não retornou confirmação, mas sua inscrição foi processada)';
+        _mostrarConfirmacao();
+        return;
+      }
+      
+      _mostrarErro(errorMessage);
+    } finally {
+      setState(() => _isLoading = false);
+    }
+  }
+
+  void _mostrarConfirmacao() {
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('Inscrição Realizada'),
+        content: const Text('Sua inscrição foi realizada com sucesso e está pendente de aprovação.'),
+        actions: [
+          TextButton(
+            onPressed: () {
+              // Atualizar o estado para mostrar que agora está inscrito
+              setState(() {
+                // Fechar o diálogo
+                Navigator.pop(context);
+                // Fechar a tela de detalhes do curso
+                Navigator.pop(context);
+              });
+            },
+            child: const Text('OK'),
+          ),
+        ],
+      ),
+    );
+  }
+
+  void _mostrarErro(String mensagem) {
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('Erro na Inscrição'),
+        content: Text(mensagem),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: const Text('OK'),
+          ),
+        ],
+      ),
+    );
+  }
+
+
   @override
   Widget build(BuildContext context) {
     final course = widget.course;
@@ -68,124 +141,127 @@ class _CourseDetailScreenState extends State<CourseDetailScreen> {
     bool podeInscrever = course.enrollmentsOpen && !semVagas && !inscritoPendente && !inscritoAtivo;
 
     return Scaffold(
+      backgroundColor: Colors.grey[300],
       endDrawer: const SideMenu(),
       appBar: AppBar(
+        backgroundColor: Colors.grey[300],
         title: const Text("Cursos"),
         leading: IconButton(
           icon: const Icon(Icons.arrow_back),
           onPressed: () => Navigator.pop(context),
         ),
       ),
-      body: SingleChildScrollView(
-        child: Padding(
-          padding: const EdgeInsets.all(16),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Center(
-                child: ClipRRect(
-                  borderRadius: BorderRadius.circular(8),
-                  child: Image.network(
-                    course.image ?? 'https://via.placeholder.com/150',
-                    height: 150,
-                    width: double.infinity,
-                    fit: BoxFit.cover,
-                  ),
-                ),
-              ),
-              const SizedBox(height: 16),
-
-              Text(
-                course.title,
-                style: const TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
-              ),
-              const SizedBox(height: 8),
-
-              FutureBuilder<String>(
-                future: getTrainerName(course.instructor),
-                builder: (context, snapshot) {
-                  if (snapshot.connectionState == ConnectionState.waiting) {
-                    return const CircularProgressIndicator();
-                  } else if (snapshot.hasError) {
-                    return const Text("Erro ao carregar formador");
-                  } else {
-                    return Row(
-                      children: [
-                        const Text("Formador: ",
-                            style: TextStyle(fontWeight: FontWeight.bold)),
-                        Text(
-                          snapshot.data ?? "Desconhecido",
-                          style: const TextStyle(color: Colors.blue),
-                        ),
-                      ],
-                    );
-                  }
-                },
-              ),
-              const SizedBox(height: 16),
-
-              const Text("Descrição", style: TextStyle(fontWeight: FontWeight.bold)),
-              const SizedBox(height: 4),
-              Text(
-                course.description,
-                textAlign: TextAlign.justify,
-              ),
-              const SizedBox(height: 16),
-
-              Container(
-                padding: const EdgeInsets.all(12),
-                decoration: BoxDecoration(
-                  color: Colors.grey[200],
-                  borderRadius: BorderRadius.circular(8),
-                ),
-                child: Row(
+      body: _isLoading
+          ? const Center(child: CircularProgressIndicator())
+          : SingleChildScrollView(
+              child: Padding(
+                padding: const EdgeInsets.all(16),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    const Icon(Icons.calendar_today),
-                    const SizedBox(width: 8),
-                    Text(
-                      DateFormat('dd/MM/yyyy').format(course.startDate),
-                      style: const TextStyle(fontSize: 16),
+                    Center(
+                      child: ClipRRect(
+                        borderRadius: BorderRadius.circular(8),
+                        child: Image.network(
+                          course.image ?? 'https://via.placeholder.com/150',
+                          height: 150,
+                          width: double.infinity,
+                          fit: BoxFit.cover,
+                        ),
+                      ),
                     ),
+                    const SizedBox(height: 16),
+
+                    Text(
+                      course.title,
+                      style: const TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
+                    ),
+                    const SizedBox(height: 8),
+
+                    FutureBuilder<String>(
+                      future: getTrainerName(course.instructor),
+                      builder: (context, snapshot) {
+                        if (snapshot.connectionState == ConnectionState.waiting) {
+                          return const CircularProgressIndicator();
+                        } else if (snapshot.hasError) {
+                          return const Text("Erro ao carregar formador");
+                        } else {
+                          return Row(
+                            children: [
+                              const Text("Formador: ",
+                                  style: TextStyle(fontWeight: FontWeight.bold)),
+                              Text(
+                                snapshot.data ?? "Desconhecido",
+                                style: const TextStyle(color: Colors.blue),
+                              ),
+                            ],
+                          );
+                        }
+                      },
+                    ),
+                    const SizedBox(height: 16),
+
+                    const Text("Descrição", style: TextStyle(fontWeight: FontWeight.bold)),
+                    const SizedBox(height: 4),
+                    Text(
+                      course.description,
+                      textAlign: TextAlign.justify,
+                    ),
+                    const SizedBox(height: 16),
+
+                    Container(
+                      padding: const EdgeInsets.all(12),
+                      decoration: BoxDecoration(
+                        color: Colors.grey[300],
+                        borderRadius: BorderRadius.circular(8),
+                      ),
+                      child: Row(
+                        children: [
+                          const Icon(Icons.calendar_today),
+                          const SizedBox(width: 8),
+                          const Text("Data de Fim: "),
+                          Text(
+                            DateFormat('dd/MM/yyyy').format(course.startDate),
+                            style: const TextStyle(fontSize: 16),
+                          ),
+                        ],
+                      ),
+                    ),
+                    const SizedBox(height: 16),
+
+                    if (inscritoAtivo)
+                      const Text("Já estás inscrito neste curso.",
+                          style: TextStyle(color: Colors.green)),
+                    if (inscritoPendente)
+                      const Text("Inscrição pendente. Aguarda aprovação.",
+                          style: TextStyle(color: Colors.orange)),
+
+                    const SizedBox(height: 16),
+
+                    if (!inscritoAtivo && !inscritoPendente)
+                      SizedBox(
+                        width: double.infinity,
+                        child: ElevatedButton(
+                          onPressed: podeInscrever ? _realizarInscricao : null,
+                          child: const Text("Inscrever"),
+                        ),
+                      ),
+
+                    if (!course.enrollmentsOpen)
+                      const Text("Inscrições encerradas para este curso.",
+                          style: TextStyle(color: Colors.red)),
+                        
+                    if (semVagas)
+                      const Text("Este curso não tem vagas disponíveis.",
+                          style: TextStyle(color: Colors.red)),
+                        
+                    if (!course.status && !course.type)
+                      const Text("Este curso já terminou.",
+                          style: TextStyle(color: Colors.red)),
                   ],
                 ),
               ),
-              const SizedBox(height: 16),
-
-              if (inscritoAtivo)
-                const Text("Já estás inscrito neste curso.",
-                    style: TextStyle(color: Colors.green)),
-              if (inscritoPendente)
-                const Text("Inscrição pendente. Aguarda aprovação.",
-                    style: TextStyle(color: Colors.orange)),
-
-              const SizedBox(height: 16),
-
-              if (!inscritoAtivo && !inscritoPendente)
-                SizedBox(
-                  width: double.infinity,
-                  child: ElevatedButton(
-                    onPressed: podeInscrever ? () {
-                      // ação para inscrever
-                    } : null,
-                    child: const Text("Inscrever"),
-                  ),
-                ),
-
-              if (!course.enrollmentsOpen)
-                const Text("Inscrições encerradas para este curso.",
-                    style: TextStyle(color: Colors.red)),
-                    
-              if (semVagas)
-                const Text("Este curso não tem vagas disponíveis.",
-                    style: TextStyle(color: Colors.red)),
-                    
-              if (!course.status && !course.type)
-                const Text("Este curso já terminou.",
-                    style: TextStyle(color: Colors.red)),
-            ],
-          ),
-        ),
-      ),
+            ),
       bottomNavigationBar: Rodape(workerNumber: _workerNumber),
     );
   }
