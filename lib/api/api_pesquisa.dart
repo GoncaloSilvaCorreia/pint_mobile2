@@ -61,12 +61,12 @@ class SearchManager {
     }).toList();
   }
 
-  Future<Enrollment?> getEnrollmentForCourseAndUser(int courseId, String workerNumber) async {
+  Future<Enrollment?> getEnrollmentForCourseAndUser(int courseId, int userId) async {
     List<Enrollment> allEnrollments = await EnrollmentService().getEnrollments();
 
     try {
       return allEnrollments.firstWhere(
-        (e) => e.courseId == courseId && e.workerNumber == workerNumber
+        (e) => e.courseId == courseId && e.userId == userId
       );
     } catch (_) {
       return null; // não inscrito

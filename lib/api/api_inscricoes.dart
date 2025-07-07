@@ -17,25 +17,25 @@ class EnrollmentService {
     }
   }
 
-  Future<Enrollment?> getEnrollmentForCourseAndUser(int courseId, String workerNumber) async {
+  Future<Enrollment?> getEnrollmentForCourseAndUser(int courseId, int userId) async {
     final enrollments = await getEnrollments();
 
     try {
       return enrollments.firstWhere(
-        (e) => e.courseId == courseId && e.workerNumber == workerNumber,
+        (e) => e.courseId == courseId && e.userId == userId,
       );
     } catch (_) {
       return null; // não inscrito
     }
   }
 
-  Future<Enrollment> createEnrollment(int courseId, String workerNumber) async {
+  Future<Enrollment> createEnrollment(int courseId, int userId) async {
     final response = await http.post(
       Uri.parse('$baseUrl/inscricoes/create'),
       headers: {'Content-Type': 'application/json'},
       body: jsonEncode({
         'id_curso': courseId,
-        'n_trabalhador': workerNumber,
+        'id_utilizador': userId,
       }),
     );
 
@@ -50,7 +50,7 @@ class EnrollmentService {
           return Enrollment(
             id: 0, // ID temporário
             courseId: courseId,
-            workerNumber: workerNumber,
+            userId: userId,
             enrollmentDate: DateTime.now(),
             status: "Pendente",
             rating: null,

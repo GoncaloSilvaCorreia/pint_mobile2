@@ -23,21 +23,21 @@ class CourseDetailScreen extends StatefulWidget {
 }
 
 class _CourseDetailScreenState extends State<CourseDetailScreen> {
-  String _workerNumber = '';
+  int _userId = 0;
   bool _isLoading = false;
   final EnrollmentService _enrollmentService = EnrollmentService();
 
   @override
   void initState() {
     super.initState();
-    _loadWorkerNumber();
+    _loadUserId();
   }
 
-  Future<void> _loadWorkerNumber() async {
+  Future<void> _loadUserId() async {
     final prefs = await SharedPreferences.getInstance();
-    final workerNumber = prefs.getString('workerNumber') ?? '';
+    final userId = prefs.getInt('userId') ?? 0; // Alterado
     setState(() {
-      _workerNumber = workerNumber;
+      _userId = userId;
     });
   }
 
@@ -53,11 +53,7 @@ class _CourseDetailScreenState extends State<CourseDetailScreen> {
         (u) => u['workerNumber'] == trainerId,
         orElse: () => null,
       );
-      if (user != null) {
-        return user['name'] ?? 'Desconhecido';
-      } else {
-        return 'Desconhecido';
-      }
+      return user?['name'] ?? 'Desconhecido';
     } else {
       throw Exception('Erro ao carregar formador');
     }
@@ -69,20 +65,16 @@ class _CourseDetailScreenState extends State<CourseDetailScreen> {
     try {
       await _enrollmentService.createEnrollment(
         widget.course.id, 
-        _workerNumber
+        _userId
       );
       
       _mostrarConfirmacao();
     } catch (e) {
-      // Tratar erro específico de resposta nula
       String errorMessage = e.toString();
       if (e.toString().contains('Null') || e.toString().contains('Map<String, dynamic>')) {
-        errorMessage = 'Inscrição realizada com sucesso! '
-                      '(O servidor não retornou confirmação, mas sua inscrição foi processada)';
         _mostrarConfirmacao();
         return;
       }
-      
       _mostrarErro(errorMessage);
     } finally {
       setState(() => _isLoading = false);
@@ -93,20 +85,15 @@ class _CourseDetailScreenState extends State<CourseDetailScreen> {
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
-        title: const Text('Inscrição Realizada'),
+        title: const Text('✅ Inscrição Realizada'),
         content: const Text('Sua inscrição foi realizada com sucesso e está pendente de aprovação.'),
         actions: [
           TextButton(
             onPressed: () {
-              // Atualizar o estado para mostrar que agora está inscrito
-              setState(() {
-                // Fechar o diálogo
-                Navigator.pop(context);
-                // Fechar a tela de detalhes do curso
-                Navigator.pop(context);
-              });
+              Navigator.pop(context);
+              Navigator.pop(context);
             },
-            child: const Text('OK'),
+            child: const Text('OK', style: TextStyle(color: Colors.blue)),
           ),
         ],
       ),
@@ -117,18 +104,17 @@ class _CourseDetailScreenState extends State<CourseDetailScreen> {
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
-        title: const Text('Erro na Inscrição'),
+        title: const Text('❌ Erro na Inscrição'),
         content: Text(mensagem),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context),
-            child: const Text('OK'),
+            child: const Text('OK', style: TextStyle(color: Colors.blue)),
           ),
         ],
       ),
     );
   }
-
 
   @override
   Widget build(BuildContext context) {
@@ -141,128 +127,335 @@ class _CourseDetailScreenState extends State<CourseDetailScreen> {
     bool podeInscrever = course.enrollmentsOpen && !semVagas && !inscritoPendente && !inscritoAtivo;
 
     return Scaffold(
-      backgroundColor: Colors.grey[300],
+      backgroundColor: Colors.grey[50],
       endDrawer: const SideMenu(),
       appBar: AppBar(
-        backgroundColor: Colors.grey[300],
-        title: const Text("Cursos"),
+        title: const Text("Detalhes do Curso", 
+            style: TextStyle(fontWeight: FontWeight.bold, color: Colors.black)),
+        centerTitle: true,
         leading: IconButton(
-          icon: const Icon(Icons.arrow_back),
+          icon: const Icon(Icons.arrow_back, color: Colors.black),
           onPressed: () => Navigator.pop(context),
         ),
+        backgroundColor: Colors.grey[300], // Original header color
+        elevation: 0,
       ),
       body: _isLoading
-          ? const Center(child: CircularProgressIndicator())
+          ? const Center(child: CircularProgressIndicator(color: Color(0xFF1976D2)))
           : SingleChildScrollView(
               child: Padding(
                 padding: const EdgeInsets.all(16),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Center(
+                    // Course Image
+                    Container(
+                      decoration: BoxDecoration(
+                        borderRadius: BorderRadius.circular(16),
+                        boxShadow: [
+                          BoxShadow(
+                            color: Colors.grey.withOpacity(0.3),
+                            blurRadius: 10,
+                            spreadRadius: 2,
+                          )
+                        ],
+                      ),
                       child: ClipRRect(
-                        borderRadius: BorderRadius.circular(8),
+                        borderRadius: BorderRadius.circular(16),
                         child: Image.network(
                           course.image ?? 'https://via.placeholder.com/150',
-                          height: 150,
+                          height: 200,
                           width: double.infinity,
                           fit: BoxFit.cover,
+                          errorBuilder: (context, error, stackTrace) => Container(
+                            height: 200,
+                            color: Colors.grey[200],
+                            child: const Icon(Icons.image_not_supported, size: 50),
+                          ),
                         ),
                       ),
                     ),
-                    const SizedBox(height: 16),
+                    const SizedBox(height: 24),
 
+                    // Course Title
                     Text(
                       course.title,
-                      style: const TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
-                    ),
-                    const SizedBox(height: 8),
-
-                    FutureBuilder<String>(
-                      future: getTrainerName(course.instructor),
-                      builder: (context, snapshot) {
-                        if (snapshot.connectionState == ConnectionState.waiting) {
-                          return const CircularProgressIndicator();
-                        } else if (snapshot.hasError) {
-                          return const Text("Erro ao carregar formador");
-                        } else {
-                          return Row(
-                            children: [
-                              const Text("Formador: ",
-                                  style: TextStyle(fontWeight: FontWeight.bold)),
-                              Text(
-                                snapshot.data ?? "Desconhecido",
-                                style: const TextStyle(color: Colors.blue),
-                              ),
-                            ],
-                          );
-                        }
-                      },
+                      style: const TextStyle(
+                        fontSize: 26,
+                        fontWeight: FontWeight.bold,
+                        color: Color(0xFF0D47A1),
+                      ),
                     ),
                     const SizedBox(height: 16),
 
-                    const Text("Descrição", style: TextStyle(fontWeight: FontWeight.bold)),
-                    const SizedBox(height: 4),
-                    Text(
-                      course.description,
-                      textAlign: TextAlign.justify,
-                    ),
-                    const SizedBox(height: 16),
-
+                    // Trainer Info
                     Container(
-                      padding: const EdgeInsets.all(12),
+                      padding: const EdgeInsets.all(16),
                       decoration: BoxDecoration(
-                        color: Colors.grey[300],
-                        borderRadius: BorderRadius.circular(8),
+                        color: Colors.white,
+                        borderRadius: BorderRadius.circular(12),
+                        boxShadow: [
+                          BoxShadow(
+                            color: Colors.grey.withOpacity(0.1),
+                            blurRadius: 6,
+                            spreadRadius: 2,
+                          )
+                        ],
                       ),
                       child: Row(
                         children: [
-                          const Icon(Icons.calendar_today),
-                          const SizedBox(width: 8),
-                          const Text("Data de Fim: "),
-                          Text(
-                            DateFormat('dd/MM/yyyy').format(course.startDate),
-                            style: const TextStyle(fontSize: 16),
+                          const Icon(Icons.person, color: Color(0xFF1976D2), size: 28),
+                          const SizedBox(width: 12),
+                          Expanded(
+                            child: FutureBuilder<String>(
+                              future: getTrainerName(course.instructor),
+                              builder: (context, snapshot) {
+                                if (snapshot.connectionState == ConnectionState.waiting) {
+                                  return const CircularProgressIndicator();
+                                }
+                                return Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    const Text(
+                                      "Formador",
+                                      style: TextStyle(
+                                        fontSize: 14,
+                                        color: Colors.grey,
+                                      ),
+                                    ),
+                                    const SizedBox(height: 4),
+                                    Text(
+                                      snapshot.data ?? "Desconhecido",
+                                      style: const TextStyle(
+                                        fontSize: 18,
+                                        fontWeight: FontWeight.w600,
+                                      ),
+                                    ),
+                                  ],
+                                );
+                              },
+                            ),
                           ),
                         ],
                       ),
                     ),
-                    const SizedBox(height: 16),
+                    const SizedBox(height: 20),
 
-                    if (inscritoAtivo)
-                      const Text("Já estás inscrito neste curso.",
-                          style: TextStyle(color: Colors.green)),
-                    if (inscritoPendente)
-                      const Text("Inscrição pendente. Aguarda aprovação.",
-                          style: TextStyle(color: Colors.orange)),
+                    // Description Card
+                    Container(
+                      padding: const EdgeInsets.all(16),
+                      decoration: BoxDecoration(
+                        color: Colors.white,
+                        borderRadius: BorderRadius.circular(12),
+                        boxShadow: [
+                          BoxShadow(
+                            color: Colors.grey.withOpacity(0.1),
+                            blurRadius: 6,
+                            spreadRadius: 2,
+                          )
+                        ],
+                      ),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          const Text(
+                            "Descrição",
+                            style: TextStyle(
+                              fontSize: 18,
+                              fontWeight: FontWeight.bold,
+                              color: Color(0xFF0D47A1),
+                            ),
+                          ),
+                          const SizedBox(height: 10),
+                          Text(
+                            course.description,
+                            style: const TextStyle(fontSize: 16, height: 1.5),
+                            textAlign: TextAlign.justify,
+                          ),
+                        ],
+                      ),
+                    ),
+                    const SizedBox(height: 20),
 
-                    const SizedBox(height: 16),
+                    // Course Details
+                    Container(
+                      padding: const EdgeInsets.all(16),
+                      decoration: BoxDecoration(
+                        color: Colors.white,
+                        borderRadius: BorderRadius.circular(12),
+                        boxShadow: [
+                          BoxShadow(
+                            color: Colors.grey.withOpacity(0.1),
+                            blurRadius: 6,
+                            spreadRadius: 2,
+                          )
+                        ],
+                      ),
+                      child: Column(
+                        children: [
+                          _buildDetailRow(
+                            Icons.calendar_today,
+                            "Data de Início",
+                            DateFormat('dd/MM/yyyy').format(course.startDate),
+                          ),
+                          const SizedBox(height: 12),
+                          _buildDetailRow(
+                            Icons.calendar_month,
+                            "Data de Fim",
+                            DateFormat('dd/MM/yyyy').format(course.endDate),
+                          ),
+                          const SizedBox(height: 12),
+                          _buildDetailRow(
+                            Icons.people,
+                            "Vagas Disponíveis",
+                            course.vacancies?.toString() ?? "Indefinido",
+                          ),
+                          const SizedBox(height: 12),
+                          _buildDetailRow(
+                            Icons.lock_clock,
+                            "Estado das Inscrições",
+                            course.enrollmentsOpen ? "Abertas" : "Fechadas",
+                            statusColor: course.enrollmentsOpen ? Colors.green : Colors.red,
+                          ),
+                        ],
+                      ),
+                    ),
+                    const SizedBox(height: 24),
 
+                    // Status Indicators
+                    if (inscritoAtivo) ...[
+                      _buildStatusIndicator(
+                        "Já estás inscrito neste curso",
+                        Icons.check_circle,
+                        Colors.green,
+                      ),
+                      const SizedBox(height: 16),
+                    ],
+                    
+                    if (inscritoPendente) ...[
+                      _buildStatusIndicator(
+                        "Inscrição pendente. Aguarda aprovação",
+                        Icons.access_time,
+                        Colors.orange,
+                      ),
+                      const SizedBox(height: 16),
+                    ],
+                    
+                    if (!course.enrollmentsOpen) ...[
+                      _buildStatusIndicator(
+                        "Inscrições encerradas para este curso",
+                        Icons.lock,
+                        Colors.red,
+                      ),
+                      const SizedBox(height: 16),
+                    ],
+                    
+                    if (semVagas) ...[
+                      _buildStatusIndicator(
+                        "Este curso não tem vagas disponíveis",
+                        Icons.warning,
+                        Colors.red,
+                      ),
+                      const SizedBox(height: 16),
+                    ],
+                    
+                    if (!course.status && !course.type) ...[
+                      _buildStatusIndicator(
+                        "Este curso já terminou",
+                        Icons.event_busy,
+                        Colors.red,
+                      ),
+                      const SizedBox(height: 16),
+                    ],
+
+                    // Enroll Button
                     if (!inscritoAtivo && !inscritoPendente)
                       SizedBox(
                         width: double.infinity,
+                        height: 52,
                         child: ElevatedButton(
                           onPressed: podeInscrever ? _realizarInscricao : null,
-                          child: const Text("Inscrever"),
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: const Color(0xFF1976D2),
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(12),
+                            ),
+                            padding: const EdgeInsets.symmetric(vertical: 14),
+                          ),
+                          child: const Text(
+                            "Inscrever-se",
+                            style: TextStyle(
+                              fontSize: 18,
+                              fontWeight: FontWeight.bold,
+                              color: Colors.white,
+                            ),
+                          ),
                         ),
                       ),
-
-                    if (!course.enrollmentsOpen)
-                      const Text("Inscrições encerradas para este curso.",
-                          style: TextStyle(color: Colors.red)),
-                        
-                    if (semVagas)
-                      const Text("Este curso não tem vagas disponíveis.",
-                          style: TextStyle(color: Colors.red)),
-                        
-                    if (!course.status && !course.type)
-                      const Text("Este curso já terminou.",
-                          style: TextStyle(color: Colors.red)),
                   ],
                 ),
               ),
             ),
-      bottomNavigationBar: Rodape(workerNumber: _workerNumber),
+      bottomNavigationBar: Rodape(workerNumber: _userId.toString()),
+    );
+  }
+
+  Widget _buildDetailRow(IconData icon, String title, String value, {Color? statusColor}) {
+    return Row(
+      children: [
+        Icon(icon, color: const Color(0xFF1976D2), size: 28),
+        const SizedBox(width: 12),
+        Expanded(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                title,
+                style: const TextStyle(
+                  fontSize: 14,
+                  color: Colors.grey,
+                ),
+              ),
+              const SizedBox(height: 4),
+              Text(
+                value,
+                style: TextStyle(
+                  fontSize: 16,
+                  fontWeight: FontWeight.w600,
+                  color: statusColor ?? Colors.black,
+                ),
+              ),
+            ],
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildStatusIndicator(String text, IconData icon, Color color) {
+    return Container(
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: color.withOpacity(0.1),
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(color: color.withOpacity(0.3)),
+      ),
+      child: Row(
+        children: [
+          Icon(icon, color: color),
+          const SizedBox(width: 12),
+          Expanded(
+            child: Text(
+              text,
+              style: TextStyle(
+                fontSize: 16,
+                color: color,
+                fontWeight: FontWeight.w500,
+              ),
+            ),
+          ),
+        ],
+      ),
     );
   }
 }

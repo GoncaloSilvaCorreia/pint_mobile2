@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
-import 'package:intl/intl.dart';
+//import 'package:intl/intl.dart';
 import 'package:pint_mobile/api/api_inscricoes.dart';
-import 'package:pint_mobile/models/curso.dart';
+//import 'package:pint_mobile/models/curso.dart';
 import 'package:pint_mobile/models/inscricoes.dart';
 import 'package:pint_mobile/utils/Rodape.dart';
 import 'package:pint_mobile/utils/SideMenu.dart';
@@ -17,30 +17,30 @@ class MeusCursos extends StatefulWidget {
 class _MeusCursosState extends State<MeusCursos> {
   final EnrollmentService _enrollmentService = EnrollmentService();
   late Future<List<Enrollment>> _futureInscricoes;
-  String _workerNumber = '';
+  int _userId = 0;
 
   @override
   void initState() {
     super.initState();
-    _loadWorkerNumber();
+    _loadUserId();
     _futureInscricoes = _loadEnrollments();
   }
 
-  Future<void> _loadWorkerNumber() async {
+  Future<void> _loadUserId() async {
     final prefs = await SharedPreferences.getInstance();
-    final workerNumber = prefs.getString('workerNumber') ?? '';
+    final userId = prefs.getInt('userId') ?? 0;
     setState(() {
-      _workerNumber = workerNumber;
+      _userId = userId;
     });
   }
 
   Future<List<Enrollment>> _loadEnrollments() async {
     final allEnrollments = await _enrollmentService.getEnrollments();
     final prefs = await SharedPreferences.getInstance();
-    final workerNumber = prefs.getString('workerNumber') ?? '';
+    final userId = prefs.getInt('userId') ?? '';
     
     return allEnrollments
-        .where((e) => e.workerNumber == workerNumber)
+        .where((e) => e.userId == _userId)
         .toList();
   }
 
@@ -226,7 +226,7 @@ class _MeusCursosState extends State<MeusCursos> {
           );
         },
       ),
-      bottomNavigationBar: Rodape(workerNumber: _workerNumber),
+      bottomNavigationBar: Rodape(workerNumber: _userId.toString()),
     );
   }
 }

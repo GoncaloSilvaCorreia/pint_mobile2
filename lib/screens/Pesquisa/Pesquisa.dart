@@ -307,9 +307,9 @@ class _PesquisaState extends State<Pesquisa> {
             ),
             onTap: () async {
               SharedPreferences prefs = await SharedPreferences.getInstance();
-              String? userWorkerNumber = prefs.getString('workerNumber');
+              int? userId = prefs.getInt('userId');
 
-              if (userWorkerNumber == null) {
+              if (userId == null) {
                 ScaffoldMessenger.of(context).showSnackBar(
                   const SnackBar(content: Text('Erro: Utilizador não encontrado.')),
                 );
@@ -318,7 +318,7 @@ class _PesquisaState extends State<Pesquisa> {
 
               Enrollment? enrollment = await _searchManager.getEnrollmentForCourseAndUser(
                 course.id,
-                userWorkerNumber,
+                userId,
               );
 
               Navigator.push(
@@ -378,9 +378,9 @@ class _PesquisaState extends State<Pesquisa> {
             ),
             onTap: () async {
               SharedPreferences prefs = await SharedPreferences.getInstance();
-              String? userWorkerNumber = prefs.getString('workerNumber');
+              int userId = prefs.getInt('userId') ?? 0;
 
-              if (userWorkerNumber == null) {
+              if (userId == null) {
                 ScaffoldMessenger.of(context).showSnackBar(
                   const SnackBar(content: Text('Erro: Utilizador não encontrado.')),
                 );
@@ -389,7 +389,7 @@ class _PesquisaState extends State<Pesquisa> {
 
               Enrollment? enrollment = await _searchManager.getEnrollmentForCourseAndUser(
                 course.id,
-                userWorkerNumber,
+                userId,
               );
 
               Navigator.push(

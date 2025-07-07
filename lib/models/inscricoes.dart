@@ -3,7 +3,7 @@ import 'package:pint_mobile/models/curso.dart';
 class Enrollment {
   final int id;
   final int courseId;
-  final String workerNumber;
+  final int userId;
   final DateTime enrollmentDate;
   final String status;
   final double? rating;
@@ -12,7 +12,7 @@ class Enrollment {
   Enrollment({
     required this.id,
     required this.courseId,
-    required this.workerNumber,
+    required this.userId,
     required this.enrollmentDate,
     required this.status,
     this.rating,
@@ -23,7 +23,7 @@ class Enrollment {
     return Enrollment(
       id: json['id'] as int? ?? 0,
       courseId: json['courseId'] as int? ?? json['id_curso'] as int? ?? 0,
-      workerNumber: json['workerNumber'] as String? ?? json['n_trabalhador'] as String? ?? '',
+      userId: json['userId'] as int? ?? json['id_utilizador'] as int? ?? 0,
       enrollmentDate: DateTime.parse(json['enrollmentDate'] as String? ?? DateTime.now().toIso8601String()),
       status: json['status'] as String? ?? 'Pendente',
       rating: json['rating'] != null ? double.parse(json['rating'].toString()) : null,
@@ -34,7 +34,7 @@ class Enrollment {
   Map<String, dynamic> toJson() => {
         'id': id,
         'courseId': courseId,
-        'workerNumber': workerNumber,
+        'id_utilizador': userId,
         'enrollmentDate': enrollmentDate.toIso8601String(),
         'status': status,
         'rating': rating,

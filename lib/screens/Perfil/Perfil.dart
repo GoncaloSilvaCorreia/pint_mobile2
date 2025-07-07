@@ -17,7 +17,7 @@ class Perfil extends StatefulWidget {
 class PerfilScreenState extends State<Perfil> {
   final ApiUtilizador api = ApiUtilizador();
   late Future<Utilizador> _futureUtilizador;
-  String _workerNumber = '';
+  int _userId = 0;
   late Future<List<Map<String, dynamic>>> _futureCursos;
 
   @override
@@ -30,9 +30,9 @@ class PerfilScreenState extends State<Perfil> {
 
   Future<void> _loadWorkerNumber() async {
     final prefs = await SharedPreferences.getInstance();
-    final workerNumber = prefs.getString('workerNumber') ?? '';
+    final userId = prefs.getInt('userId') ?? 0;
     setState(() {
-      _workerNumber = workerNumber;
+      _userId = userId;
     });
   }
 
@@ -132,7 +132,7 @@ class PerfilScreenState extends State<Perfil> {
           return const Center(child: CircularProgressIndicator());
         },
       ),
-      bottomNavigationBar: Rodape(workerNumber: _workerNumber),
+      bottomNavigationBar: Rodape(workerNumber: _userId.toString()),
     );
   }
 
