@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
-import 'package:firebase_auth/firebase_auth.dart';
+import 'package:pint_mobile/api/api.dart';
 
 class Reset extends StatefulWidget {
   const Reset({super.key});
@@ -11,31 +11,54 @@ class Reset extends StatefulWidget {
 
 class _ResetPage extends State<Reset> {
   final TextEditingController _emailController = TextEditingController();
-  String? _emailError; 
+  bool _isLoading = false;
+  String? _errorMessage;
+  String? _emailError;
+  String? _successMessage;
+  final ApiClient _apiClient = ApiClient();
 
-  Future<void> resetPassword() async {
-    String email = _emailController.text.trim();
+  Future<void> _resetPassword() async {
+    setState(() {
+      _isLoading = true;
+      _errorMessage = null;
+      _successMessage = null;
+    });
+
+    final String email = _emailController.text.trim();
+    bool hasError = false;
 
     if (email.isEmpty) {
       setState(() {
         _emailError = 'Por favor, insira o seu email.';
       });
-      return;
+      hasError = true;
     }
 
-    setState(() {
-      _emailError = null;
-    });
+    if (hasError) return;
 
     try {
-      await FirebaseAuth.instance.sendPasswordResetEmail(email: email);
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Email de recuperação enviado com sucesso. Verifique a sua caixa de entrada.')),
-      );
+      final response = await _apiClient.resetPassword(email);
+
+      if (response['success']) {
+        setState(() {
+          _successMessage = 'Se o e-mail estiver registado, você receberá um link para redefinir sua senha.';
+        });
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text(_successMessage!)),
+        );
+      } else {
+        setState(() {
+          _errorMessage = 'Erro ao enviar email de redefinição';
+        });
+      }
     } catch (e) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Erro ao enviar email de recuperação: $e')),
-      );
+      setState(() {
+        _errorMessage = 'Erro ao tentar resetar a senha: $e';
+      });
+    } finally {
+      setState(() {
+        _isLoading = false;
+      });
     }
   }
 
@@ -110,13 +133,26 @@ class _ResetPage extends State<Reset> {
                 style: ElevatedButton.styleFrom(
                   backgroundColor: Colors.indigo,
                 ),
-                onPressed: resetPassword,
-                child: const Text(
-                  'Pedir nova chave de acesso',
-                  style: TextStyle(color: Colors.white),
-                ),
+                onPressed: _resetPassword,
+                child: _isLoading
+                    ? const CircularProgressIndicator()
+                    : const Text(
+                        'Pedir nova chave de acesso',
+                        style: TextStyle(color: Colors.white),
+                      ),
               ),
             ),
+            const SizedBox(height: 24),
+            if (_errorMessage != null)
+              Text(
+                _errorMessage!,
+                style: const TextStyle(color: Colors.red),
+              ),
+            if (_successMessage != null)
+              Text(
+                _successMessage!,
+                style: const TextStyle(color: Colors.green),
+              ),
             const SizedBox(height: 24),
             Row(
               mainAxisAlignment: MainAxisAlignment.center,

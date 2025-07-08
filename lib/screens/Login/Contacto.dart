@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
+import 'package:pint_mobile/api/api.dart';
 
 class Contacto extends StatefulWidget {
   const Contacto({super.key});
@@ -12,7 +13,6 @@ class _ContactoState extends State<Contacto> {
   final _workerNumberController = TextEditingController();
   final _fullNameController = TextEditingController();
   final _emailController = TextEditingController();
-  final _subjectController = TextEditingController();
   final _messageController = TextEditingController();
 
   String? _workerNumberError;
@@ -22,7 +22,19 @@ class _ContactoState extends State<Contacto> {
   String? _messageError;
 
   bool _isLoading = false;
+  String? _selectedSubject;
 
+  final List<String> _subjects = [
+    'Criar Conta',
+    'Problemas com o login',
+    'Problemas técnicos no site',
+    'Feedback/Sugestões',
+    'Outros'
+  ];
+
+  final ApiClient _apiClient = ApiClient(); 
+
+  // Função para enviar os dados do formulário para o servidor
   Future<void> _handleSubmit() async {
     setState(() {
       _workerNumberError = null;
@@ -35,7 +47,7 @@ class _ContactoState extends State<Contacto> {
     String workerNumber = _workerNumberController.text.trim();
     String fullName = _fullNameController.text.trim();
     String email = _emailController.text.trim();
-    String subject = _subjectController.text.trim();
+    String subject = _selectedSubject ?? ''; // Se não tiver assunto, será vazio
     String message = _messageController.text.trim();
 
     bool hasError = false;
@@ -63,7 +75,7 @@ class _ContactoState extends State<Contacto> {
 
     if (subject.isEmpty) {
       setState(() {
-        _subjectError = 'Por favor, insira o Assunto.';
+        _subjectError = 'Por favor, selecione o Assunto.';
       });
       hasError = true;
     }
@@ -79,10 +91,25 @@ class _ContactoState extends State<Contacto> {
 
     setState(() => _isLoading = true);
 
+    // Enviar os dados do formulário para o servidor via API
     try {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Formulário enviado com sucesso!')),
+      final response = await _apiClient.sendContactForm(
+        workerNumber,
+        fullName,
+        email,
+        subject,
+        message,
       );
+
+      if (response['success']) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Formulário enviado com sucesso!')),
+        );
+      } else {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Erro ao enviar o formulário: ${response['message']}')),
+        );
+      }
     } catch (e) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text('Erro: ${e.toString()}')),
@@ -97,7 +124,6 @@ class _ContactoState extends State<Contacto> {
     _workerNumberController.dispose();
     _fullNameController.dispose();
     _emailController.dispose();
-    _subjectController.dispose();
     _messageController.dispose();
     super.dispose();
   }
@@ -179,13 +205,24 @@ class _ContactoState extends State<Contacto> {
             const SizedBox(height: 16),
             const Text('Assunto'),
             const SizedBox(height: 4),
-            TextField(
-              controller: _subjectController,
+            DropdownButtonFormField<String>(
+              value: _selectedSubject,
+              onChanged: (String? newValue) {
+                setState(() {
+                  _selectedSubject = newValue;
+                });
+              },
               decoration: InputDecoration(
-                hintText: 'Mencione o motivo pelo Contacto',
+                hintText: 'Selecione um assunto',
                 border: const OutlineInputBorder(),
                 errorText: _subjectError,
               ),
+              items: _subjects.map<DropdownMenuItem<String>>((String value) {
+                return DropdownMenuItem<String>(
+                  value: value,
+                  child: Text(value),
+                );
+              }).toList(),
             ),
             const SizedBox(height: 16),
             const Text('Mensagem'),

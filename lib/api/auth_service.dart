@@ -53,4 +53,8 @@ class AuthService {
     final prefs = await SharedPreferences.getInstance();
     return prefs.getString('workerNumber');
   }
+
+  Future<Map<String, dynamic>> resetPassword(String email) {
+    return _apiClient.resetPassword(email);
+  }
 }
