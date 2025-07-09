@@ -17,7 +17,7 @@ class Perfil extends StatefulWidget {
 class PerfilScreenState extends State<Perfil> {
   final ApiUtilizador api = ApiUtilizador();
   late Future<Utilizador> _futureUtilizador;
-  int _userId = 0;
+  String _workerNumber = '';
   late Future<List<Map<String, dynamic>>> _futureCursos;
 
   @override
@@ -30,18 +30,25 @@ class PerfilScreenState extends State<Perfil> {
 
   Future<void> _loadWorkerNumber() async {
     final prefs = await SharedPreferences.getInstance();
-    final userId = prefs.getInt('userId') ?? 0;
+    final workerNumber = prefs.getString('workerNumber') ?? '';
     setState(() {
-      _userId = userId;
+      _workerNumber = workerNumber;
     });
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-    
-      appBar: AppBar(title: const Text('Meu perfil')),
+      backgroundColor: Colors.grey[300],
       endDrawer: const SideMenu(),
+      appBar: AppBar(
+        title: const Text('Meu Perfil', 
+            style: TextStyle(fontWeight: FontWeight.bold, color: Color.fromARGB(255, 0, 0, 0))),
+        centerTitle: true,
+        backgroundColor: Colors.grey[300],
+        elevation: 0,
+        iconTheme: const IconThemeData(color: Colors.white),
+      ),
       body: FutureBuilder<Utilizador>(
         future: _futureUtilizador,
         builder: (context, userSnapshot) {
@@ -64,96 +71,128 @@ class PerfilScreenState extends State<Perfil> {
                       Container(
                         padding: const EdgeInsets.all(24),
                         decoration: BoxDecoration(
-                          color: Colors.blue[50],
-                          borderRadius: BorderRadius.circular(12),
+                          color: Colors.white,
+                          borderRadius: BorderRadius.circular(16),
+                          boxShadow: [
+                            BoxShadow(
+                              color: const Color.fromARGB(255, 255, 255, 255).withOpacity(0.2),
+                              blurRadius: 10,
+                              spreadRadius: 3,
+                            ),
+                          ],
                         ),
                         child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-                            Center(
-                              child: CircleAvatar(
-                                radius: 50,
-                                backgroundImage: NetworkImage(
-                                  utilizador.pfp ?? 'https://via.placeholder.com/150',
+                            Stack(
+                              alignment: Alignment.bottomRight,
+                              children: [
+                                CircleAvatar(
+                                  radius: 60,
+                                  backgroundImage: NetworkImage(
+                                    utilizador.pfp ?? 'https://via.placeholder.com/150',
+                                  ),
+                                  backgroundColor: Colors.grey[200],
+                                  child: utilizador.pfp == null
+                                      ? const Icon(Icons.person, size: 50, color: Colors.grey)
+                                      : null,
                                 ),
+                              ],
+                            ),
+                            const SizedBox(height: 20),
+                            Text(
+                              utilizador.nome,
+                              style: const TextStyle(
+                                fontSize: 24,
+                                fontWeight: FontWeight.bold,
+                                color: Colors.black87,
+                              ),
+                            ),
+                            const SizedBox(height: 8),
+                            Text(
+                              utilizador.primaryRole ?? "Função não definida",
+                              style: TextStyle(
+                                fontSize: 16,
+                                color: Colors.grey[700],
                               ),
                             ),
                             const SizedBox(height: 20),
-                            Center(
-                              child: Text(
-                                utilizador.nome,
-                                style: const TextStyle(
-                                  fontSize: 24,
-                                  fontWeight: FontWeight.bold,
-                                ),
-                              ),
-                            ),
-                            const SizedBox(height: 16),
-                            _buildInfoRow("Função:", utilizador.primaryRole ?? "N/A"),
-                            _buildInfoRow("ID:", utilizador.workerNumber),
-                            _buildInfoRow("E-mail:", utilizador.email),
+                            _buildInfoCard(Icons.badge, "ID", utilizador.workerNumber),
+                            const SizedBox(height: 12),
+                            _buildInfoCard(Icons.email, "E-mail", utilizador.email),
                           ],
                         ),
                       ),
                       
-                      const SizedBox(height: 20),
-                      
-                      // Seção de Preferências
-                      const Text(
-                        "As minhas preferências",
-                        style: TextStyle(
-                          fontSize: 18,
-                          fontWeight: FontWeight.bold,
-                        ),
-                      ),
-                      const SizedBox(height: 16),
-                      _buildPreferencesTable(utilizador.interests),
-                      
-                      const SizedBox(height: 20),
+                      const SizedBox(height: 24),
                       
                       // Seção de Cursos Concluídos
-                      const Text(
-                        "Cursos concluídos",
-                        style: TextStyle(
-                          fontSize: 18,
-                          fontWeight: FontWeight.bold,
+                      const Padding(
+                        padding: EdgeInsets.only(left: 8.0, bottom: 12),
+                        child: Text(
+                          "Cursos Concluídos",
+                          style: TextStyle(
+                            fontSize: 20,
+                            fontWeight: FontWeight.bold,
+                            color: Colors.black87,
+                          ),
                         ),
                       ),
-                      const SizedBox(height: 16),
-                      _buildCoursesTable(cursos),
+                      _buildCoursesSection(cursos),
                     ],
                   ),
                 );
               },
             );
           } else if (userSnapshot.hasError) {
-            return Center(child: Text('Erro: ${userSnapshot.error}'));
+            return Center(
+              child: Text(
+                'Erro ao carregar perfil: ${userSnapshot.error}',
+                style: const TextStyle(color: Colors.red),
+                textAlign: TextAlign.center,
+              ),
+            );
           }
           return const Center(child: CircularProgressIndicator());
         },
       ),
-      bottomNavigationBar: Rodape(workerNumber: _userId.toString()),
+      bottomNavigationBar: Rodape(workerNumber: _workerNumber),
     );
   }
 
-  // Widget para construir linha de informação
-  Widget _buildInfoRow(String label, String value) {
-    return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 4),
+  // Widget para cartão de informação
+  Widget _buildInfoCard(IconData icon, String title, String value) {
+    return Container(
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: Colors.grey[50],
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(color: Colors.grey[300]!),
+      ),
       child: Row(
         children: [
-          Text(
-            label,
-            style: const TextStyle(
-              fontWeight: FontWeight.bold,
-              fontSize: 16,
-            ),
-          ),
-          const SizedBox(width: 8),
+          Icon(icon, color: Colors.blue, size: 28),
+          const SizedBox(width: 16),
           Expanded(
-            child: Text(
-              value,
-              style: const TextStyle(fontSize: 16),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  title,
+                  style: TextStyle(
+                    fontSize: 14,
+                    color: Colors.grey[600],
+                    fontWeight: FontWeight.w500,
+                  ),
+                ),
+                const SizedBox(height: 4),
+                Text(
+                  value,
+                  style: const TextStyle(
+                    fontSize: 16,
+                    fontWeight: FontWeight.w500,
+                  ),
+                ),
+              ],
             ),
           ),
         ],
@@ -161,175 +200,201 @@ class PerfilScreenState extends State<Perfil> {
     );
   }
 
-  // Widget para construir a tabela de preferências
-  Widget _buildPreferencesTable(List<Map<String, dynamic>> interests) {
+  // Widget para a seção de preferências
+  Widget _buildPreferencesSection(List<Map<String, dynamic>> interests) {
     if (interests.isEmpty) {
-      return const Center(
-        child: Text("Nenhum interesse encontrado"),
-      );
-    }
-
-    // Dividir interesses em grupos de 2 para formar as linhas
-    List<List<Map<String, dynamic>>> rows = [];
-    for (int i = 0; i < interests.length; i += 2) {
-      if (i + 1 < interests.length) {
-        rows.add([interests[i], interests[i + 1]]);
-      } else {
-        rows.add([interests[i]]);
-      }
-    }
-
-    return Table(
-      border: TableBorder.all(
-        color: Colors.grey[300]!,
-        width: 1.0,
-      ),
-      columnWidths: const {
-        0: FlexColumnWidth(1),
-        1: FlexColumnWidth(0.3),
-        2: FlexColumnWidth(1),
-        3: FlexColumnWidth(0.3),
-      },
-      children: [
-        for (var row in rows)
-          TableRow(
-            decoration: BoxDecoration(
-              color: rows.indexOf(row) % 2 == 0
-                  ? Colors.white
-                  : Colors.grey[50],
-            ),
-            children: [
-              // Primeiro interesse
-              _buildPreferenceCell(row[0]["description"]),
-              _buildRemoveButton(),
-              // Segundo interesse (se existir)
-              row.length > 1
-                  ? _buildPreferenceCell(row[1]["description"])
-                  : Container(),
-              row.length > 1
-                  ? _buildRemoveButton()
-                  : Container(),
-            ],
-          ),
-      ],
-    );
-  }
-
-  // Widget para célula de preferência
-  Widget _buildPreferenceCell(String text) {
-    return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 16),
-      child: Text(
-        text,
-        style: const TextStyle(fontSize: 16),
-      ),
-    );
-  }
-
-  // Widget para botão de remoção (X)
-  Widget _buildRemoveButton() {
-    return Center(
-      child: IconButton(
-        icon: const Icon(Icons.close, size: 20),
-        color: Colors.red,
-        onPressed: () {
-          // Lógica para remover preferência
-        },
-      ),
-    );
-  }
-
-  // Widget para construir a tabela de cursos (CORRIGIDO)
-  Widget _buildCoursesTable(List<Map<String, dynamic>> cursos) {
-    if (cursos.isEmpty) {
-      return const Center(
-        child: Text("Nenhum curso encontrado"),
-      );
-    }
-
-    return Table(
-      border: TableBorder.all(
-        color: Colors.grey[300]!,
-        width: 1.0,
-      ),
-      columnWidths: const {
-        0: FlexColumnWidth(0.5),
-        1: FlexColumnWidth(2),
-        2: FlexColumnWidth(0.5),
-      },
-      children: [
-        // Cabeçalho da tabela
-        TableRow(
-          decoration: const BoxDecoration(
-            color: Colors.blue,
-          ),
-          children: [
-            Padding(
-              padding: const EdgeInsets.symmetric(vertical: 8),
-              child: Center(
-                child: Text(
-                  "ID",
-                  style: TextStyle(
-                    color: Colors.white,
-                    fontWeight: FontWeight.bold,
-                  ),
-                ),
-              ),
-            ),
-            Padding(
-              padding: const EdgeInsets.symmetric(vertical: 8),
-              child: Center(
-                child: Text(
-                  "Nome",
-                  style: TextStyle(
-                    color: Colors.white,
-                    fontWeight: FontWeight.bold,
-                  ),
-                ),
-              ),
-            ),
-            Padding(
-              padding: const EdgeInsets.symmetric(vertical: 8),
-              child: Center(
-                child: Text(
-                  "Certificado",
-                  style: TextStyle(
-                    color: Colors.white,
-                    fontWeight: FontWeight.bold,
-                  ),
-                ),
-              ),
-            ),
+      return Container(
+        padding: const EdgeInsets.all(24),
+        decoration: BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.circular(16),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.grey.withOpacity(0.1),
+              blurRadius: 6,
+              spreadRadius: 2,
+            )
           ],
         ),
-        // Linhas de cursos (CORREÇÃO APLICADA AQUI)
-        for (var curso in cursos)
-          TableRow(
-            decoration: BoxDecoration(
-              color: cursos.indexOf(curso) % 2 == 0
-                  ? Colors.white
-                  : Colors.grey[50],
+        child: const Center(
+          child: Text(
+            "Nenhum interesse adicionado",
+            style: TextStyle(fontSize: 16, color: Colors.grey),
+          ),
+        ),
+      );
+    }
+
+    return Container(
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(16),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.grey.withOpacity(0.1),
+            blurRadius: 6,
+            spreadRadius: 2,
+          )
+        ],
+      ),
+      child: Column(
+        children: [
+          for (var interest in interests)
+            Padding(
+              padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 16),
+              child: Row(
+                children: [
+                  const Icon(Icons.favorite, color: Colors.red, size: 20),
+                  const SizedBox(width: 12),
+                  Expanded(
+                    child: Text(
+                      interest["description"],
+                      style: const TextStyle(fontSize: 16),
+                    ),
+                  ),
+                  IconButton(
+                    icon: const Icon(Icons.close, size: 20),
+                    color: Colors.grey,
+                    onPressed: () {
+                      // Lógica para remover preferência
+                    },
+                  ),
+                ],
+              ),
             ),
-            children: [
-              Padding(
-                padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 8),
-                child: Center(child: Text(curso["id"].toString())),
+        ],
+      ),
+    );
+  }
+
+  // Widget para a seção de cursos
+  Widget _buildCoursesSection(List<Map<String, dynamic>> cursos) {
+    if (cursos.isEmpty) {
+      return Container(
+        padding: const EdgeInsets.all(24),
+        decoration: BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.circular(16),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.grey.withOpacity(0.1),
+              blurRadius: 6,
+              spreadRadius: 2,
+            )
+          ],
+        ),
+        child: const Center(
+          child: Text(
+            "Nenhum curso concluído",
+            style: TextStyle(fontSize: 16, color: Colors.grey),
+          ),
+        ),
+      );
+    }
+
+    return Container(
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(16),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.grey.withOpacity(0.1),
+            blurRadius: 6,
+            spreadRadius: 2,
+          )
+        ],
+      ),
+      child: Column(
+        children: [
+          // Cabeçalho da tabela
+          Container(
+            padding: const EdgeInsets.symmetric(vertical: 14, horizontal: 16),
+            decoration: const BoxDecoration(
+              color: Colors.blue,
+              borderRadius: BorderRadius.only(
+                topLeft: Radius.circular(16),
+                topRight: Radius.circular(16),
               ),
-              Padding(
-                padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 8),
-                child: Text(curso["title"]),
-              ),
-              Padding(
-                padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 8),
-                child: Center(
-                  child: curso.containsKey("certificado") && curso["certificado"]
-                      ? const Icon(Icons.verified, color: Colors.green)
-                      : const Text("💤", style: TextStyle(fontSize: 20)),
+            ),
+            child: const Row(
+              children: [
+                Expanded(
+                  flex: 1,
+                  child: Text(
+                    "ID",
+                    style: TextStyle(
+                      color: Colors.white,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                ),
+                Expanded(
+                  flex: 3,
+                  child: Text(
+                    "Nome do Curso",
+                    style: TextStyle(
+                      color: Colors.white,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                ),
+                Expanded(
+                  flex: 1,
+                  child: Center(
+                    child: Text(
+                      "Cert.",
+                      style: TextStyle(
+                        color: Colors.white,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ),
+          // Linhas de cursos
+          for (int i = 0; i < cursos.length; i++)
+            Container(
+              decoration: BoxDecoration(
+                border: Border(
+                  bottom: i < cursos.length - 1
+                      ? BorderSide(color: Colors.grey[300]!)
+                      : BorderSide.none,
                 ),
               ),
-            ],
-          ),
-      ],
+              child: Padding(
+                padding: const EdgeInsets.symmetric(vertical: 14, horizontal: 16),
+                child: Row(
+                  children: [
+                    Expanded(
+                      flex: 1,
+                      child: Text(
+                        cursos[i]["id"].toString(),
+                        style: const TextStyle(fontWeight: FontWeight.w500),
+                      ),
+                    ),
+                    Expanded(
+                      flex: 3,
+                      child: Text(
+                        cursos[i]["title"],
+                        style: const TextStyle(fontSize: 15),
+                      ),
+                    ),
+                    Expanded(
+                      flex: 1,
+                      child: Center(
+                        child: cursos[i].containsKey("certificado") && cursos[i]["certificado"]
+                            ? const Icon(Icons.verified, color: Colors.green, size: 24)
+                            : const Icon(Icons.schedule, color: Colors.orange, size: 24),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+        ],
+      ),
     );
   }
 }

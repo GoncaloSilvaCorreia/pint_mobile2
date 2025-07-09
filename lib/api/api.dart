@@ -52,47 +52,50 @@ class ApiClient {
         body: json.encode({'email': email}),
       );
 
+      // Verifica se a resposta da API foi bem-sucedida (status code 200)
       if (response.statusCode == 200) {
-        return json.decode(response.body);
+        final responseBody = json.decode(response.body);
+
+        // Se o sucesso for verdadeiro, retorna os dados
+        if (responseBody['success'] == true) {
+          return responseBody;
+        } else {
+          // Se a API retornar sucesso falso, lança uma exceção com a mensagem de erro
+          throw Exception(responseBody['message']);
+        }
       } else {
-        final errorData = json.decode(response.body);
-        throw Exception('Erro na resposta: ${errorData['message']}');
+        // Se o código de status não for 200, lança um erro
+        throw Exception('Erro inesperado ao tentar resetar a senha');
       }
     } catch (e) {
-      print('Erro ao solicitar reset de senha: $e'); // Adicionando log para erro
+      // Se houver erro de rede ou outro, captura e lança um erro apropriado
       throw Exception('Erro de rede: $e');
     }
   }
 
   Future<Map<String, dynamic>> sendContactForm(
     String workerNumber,
-    String fullName,
+    String name,
     String email,
     String subject,
     String message,
   ) async {
     final Uri url = Uri.parse('$baseUrl/requests/create');
 
-    try {
-      final response = await http.post(
-        url,
-        headers: {'Content-Type': 'application/json'},
-        body: json.encode({
-          'workerNumber': workerNumber,
-          'fullName': fullName,
-          'email': email,
-          'subject': subject,
-          'message': message,
-        }),
-      );
+    final response = await http.post(
+      url,
+      headers: {'Content-Type': 'application/json'},
+      body: json.encode({
+        'workerNumber': workerNumber,
+        'name': name,
+        'email': email,
+        'subject': subject,
+        'message': message,
+      }),
+    );
 
-      if (response.statusCode == 200) {
-        return json.decode(response.body);
-      } else {
-        throw Exception('Erro ao enviar o formulário: ${response.body}');
-      }
-    } catch (e) {
-      throw Exception('Erro de rede: $e');
-    }
+    final responseBody = json.decode(response.body);
+    
+    return responseBody;
   }
 }

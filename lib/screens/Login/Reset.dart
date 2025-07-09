@@ -39,28 +39,39 @@ class _ResetPage extends State<Reset> {
     try {
       final response = await _apiClient.resetPassword(email);
 
-      if (response['success']) {
+      if (response['success'] == true) {
         setState(() {
-          _successMessage = 'Se o e-mail estiver registado, você receberá um link para redefinir sua senha.';
+          _successMessage = response['message']; // Mensagem de sucesso
+          _errorMessage = null;  // Limpar qualquer erro anterior.
         });
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(content: Text(_successMessage!)),
         );
       } else {
         setState(() {
-          _errorMessage = 'Erro ao enviar email de redefinição';
+          _errorMessage = response['message']; // Mensagem de erro
+          _successMessage = null;  // Limpar qualquer sucesso anterior.
         });
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text(_errorMessage!)),
+        );
       }
     } catch (e) {
+      // Aqui, capturamos o erro real de rede ou resposta de API e mostramos o erro
       setState(() {
         _errorMessage = 'Erro ao tentar resetar a senha: $e';
+        _successMessage = null;  // Limpar qualquer sucesso anterior.
       });
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text(_errorMessage!)),
+      );
     } finally {
       setState(() {
         _isLoading = false;
       });
     }
   }
+
 
   @override
   Widget build(BuildContext context) {
