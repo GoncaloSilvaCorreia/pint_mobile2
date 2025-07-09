@@ -12,17 +12,17 @@ import 'package:pint_mobile/models/inscricoes.dart';
 
 import 'package:pint_mobile/api/api_inscricoes.dart';
 
-class CourseDetailScreen extends StatefulWidget {
+class Curso extends StatefulWidget {
   final Course course;
   final Enrollment? enrollment;
 
-  const CourseDetailScreen({super.key, required this.course, this.enrollment});
+  const Curso({super.key, required this.course, this.enrollment});
 
   @override
-  State<CourseDetailScreen> createState() => _CourseDetailScreenState();
+  State<Curso> createState() => _CursoState();
 }
 
-class _CourseDetailScreenState extends State<CourseDetailScreen> {
+class _CursoState extends State<Curso> {
   int _userId = 0;
   bool _isLoading = false;
   final EnrollmentService _enrollmentService = EnrollmentService();

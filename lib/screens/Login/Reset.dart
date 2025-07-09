@@ -17,11 +17,54 @@ class _ResetPage extends State<Reset> {
   String? _successMessage;
   final ApiClient _apiClient = ApiClient();
 
+  // Função para mostrar diálogo de sucesso
+  void _mostrarSucesso(String mensagem) {
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('✅ Email Enviado'),
+        content: Text(mensagem),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: const Text('OK', style: TextStyle(color: Colors.blue)),
+          ),
+        ],
+      ),
+    );
+  }
+
+  // Função para mostrar diálogo de erro
+  void _mostrarErro(String mensagem) {
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('❌ Erro no Envio'),
+        content: SingleChildScrollView(child: Text(mensagem)),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: const Text('OK', style: TextStyle(color: Colors.blue)),
+          )
+        ],
+      ),
+    );
+  }
+
+  // Função para validar formato de e-mail
+  bool _isValidEmail(String email) {
+    final emailRegex = RegExp(
+      r'^[\w-]+(\.[\w-]+)*@([\w-]+\.)+[a-zA-Z]{2,7}$'
+    );
+    return emailRegex.hasMatch(email);
+  }
+
   Future<void> _resetPassword() async {
     setState(() {
       _isLoading = true;
       _errorMessage = null;
       _successMessage = null;
+      _emailError = null;
     });
 
     final String email = _emailController.text.trim();
@@ -32,9 +75,17 @@ class _ResetPage extends State<Reset> {
         _emailError = 'Por favor, insira o seu email.';
       });
       hasError = true;
+    } else if (!_isValidEmail(email)) {
+      setState(() {
+        _emailError = 'Por favor, insira um email válido.';
+      });
+      hasError = true;
     }
 
-    if (hasError) return;
+    if (hasError) {
+      setState(() => _isLoading = false);
+      return;
+    }
 
     try {
       final response = await _apiClient.resetPassword(email);
@@ -44,27 +95,33 @@ class _ResetPage extends State<Reset> {
           _successMessage = response['message']; // Mensagem de sucesso
           _errorMessage = null;  // Limpar qualquer erro anterior.
         });
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text(_successMessage!)),
-        );
+        
+        _emailController.clear(); // Limpar campo após envio bem-sucedido
+        _mostrarSucesso(_successMessage!); // Mostrar alerta de sucesso
       } else {
         setState(() {
           _errorMessage = response['message']; // Mensagem de erro
           _successMessage = null;  // Limpar qualquer sucesso anterior.
+          
+          // Destacar erro de e-mail se a mensagem contiver "email"
+          if (_errorMessage!.toLowerCase().contains('email')) {
+            _emailError = _errorMessage;
+          }
         });
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text(_errorMessage!)),
-        );
+        _mostrarErro(_errorMessage!);
       }
     } catch (e) {
-      // Aqui, capturamos o erro real de rede ou resposta de API e mostramos o erro
+      String errorMsg = 'Erro ao tentar resetar a senha: ${e.toString()}';
       setState(() {
-        _errorMessage = 'Erro ao tentar resetar a senha: $e';
-        _successMessage = null;  // Limpar qualquer sucesso anterior.
+        _errorMessage = errorMsg;
+        _successMessage = null;
+        
+        // Destacar erro de e-mail se o erro contiver "email"
+        if (e.toString().toLowerCase().contains('email')) {
+          _emailError = 'Formato de e-mail inválido';
+        }
       });
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text(_errorMessage!)),
-      );
+      _mostrarErro(errorMsg);
     } finally {
       setState(() {
         _isLoading = false;
@@ -127,6 +184,7 @@ class _ResetPage extends State<Reset> {
                 focusedBorder: OutlineInputBorder(
                   borderSide: BorderSide(
                     color: _emailError != null ? Colors.red : Colors.indigo,
+                    width: _emailError != null ? 2.0 : 1.0,
                   ),
                 ),
                 enabledBorder: OutlineInputBorder(
@@ -134,7 +192,12 @@ class _ResetPage extends State<Reset> {
                     color: _emailError != null ? Colors.red : Colors.grey,
                   ),
                 ),
+                errorStyle: TextStyle(color: Colors.red[700]),
+                focusedErrorBorder: OutlineInputBorder(
+                  borderSide: BorderSide(color: Colors.red[700]!, width: 2.0),
+                ),
               ),
+              keyboardType: TextInputType.emailAddress,
             ),
             const SizedBox(height: 16),
             SizedBox(
@@ -144,7 +207,7 @@ class _ResetPage extends State<Reset> {
                 style: ElevatedButton.styleFrom(
                   backgroundColor: Colors.indigo,
                 ),
-                onPressed: _resetPassword,
+                onPressed: _isLoading ? null : _resetPassword,
                 child: _isLoading
                     ? const CircularProgressIndicator()
                     : const Text(
@@ -157,12 +220,12 @@ class _ResetPage extends State<Reset> {
             if (_errorMessage != null)
               Text(
                 _errorMessage!,
-                style: const TextStyle(color: Colors.red),
+                style: TextStyle(color: Colors.red[700], fontWeight: FontWeight.bold),
               ),
             if (_successMessage != null)
               Text(
                 _successMessage!,
-                style: const TextStyle(color: Colors.green),
+                style: TextStyle(color: Colors.green[700], fontWeight: FontWeight.bold),
               ),
             const SizedBox(height: 24),
             Row(

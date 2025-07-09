@@ -66,6 +66,7 @@ class EnrollmentService {
             startDate: DateTime.now(),
             endDate: DateTime.now(),
             enrollmentsOpen: false,
+            sections: [],
           ),
         );
       }

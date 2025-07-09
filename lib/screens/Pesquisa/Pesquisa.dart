@@ -324,7 +324,7 @@ class _PesquisaState extends State<Pesquisa> {
               Navigator.push(
                 context,
                 MaterialPageRoute(
-                  builder: (context) => CourseDetailScreen(
+                  builder: (context) => Curso(
                     course: course,
                     enrollment: enrollment,
                   ),
@@ -395,7 +395,7 @@ class _PesquisaState extends State<Pesquisa> {
               Navigator.push(
                 context,
                 MaterialPageRoute(
-                  builder: (context) => CourseDetailScreen(
+                  builder: (context) => Curso(
                     course: course,
                     enrollment: enrollment,
                   ),

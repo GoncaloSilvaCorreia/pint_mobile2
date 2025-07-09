@@ -1,17 +1,21 @@
 import 'package:flutter/material.dart';
-//import 'package:intl/intl.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+
 import 'package:pint_mobile/api/api_inscricoes.dart';
-//import 'package:pint_mobile/models/curso.dart';
+
 import 'package:pint_mobile/models/inscricoes.dart';
+
 import 'package:pint_mobile/utils/Rodape.dart';
 import 'package:pint_mobile/utils/SideMenu.dart';
-import 'package:shared_preferences/shared_preferences.dart';
+
+import 'package:pint_mobile/screens/Curso/Curso.dart'; // Tela de detalhes do curso
+import 'package:pint_mobile/screens/Curso/Curso_Conteudo.dart'; // Tela de conteúdo do curso
 
 class MeusCursos extends StatefulWidget {
   const MeusCursos({Key? key}) : super(key: key);
 
   @override
-  _MeusCursosState createState() => _MeusCursosState();
+  State<MeusCursos> createState() => _MeusCursosState();
 }
 
 class _MeusCursosState extends State<MeusCursos> {
@@ -36,9 +40,6 @@ class _MeusCursosState extends State<MeusCursos> {
 
   Future<List<Enrollment>> _loadEnrollments() async {
     final allEnrollments = await _enrollmentService.getEnrollments();
-    final prefs = await SharedPreferences.getInstance();
-    final userId = prefs.getInt('userId') ?? '';
-    
     return allEnrollments
         .where((e) => e.userId == _userId)
         .toList();
@@ -194,11 +195,19 @@ class _MeusCursosState extends State<MeusCursos> {
                       Row(
                         mainAxisAlignment: MainAxisAlignment.spaceBetween,
                         children: [
-                          // Botão Continuar
+                          // Botão Continuar (apenas para cursos em andamento)
                           if (estado == "Em curso")
                             ElevatedButton(
                               onPressed: () {
-                                // Lógica para continuar o curso
+                                // Navegar para a tela de conteúdo do curso
+                                Navigator.push(
+                                  context,
+                                  MaterialPageRoute(
+                                    builder: (context) => CursoConteudo(
+                                      courseId: enrollment.course.id,
+                                    ),
+                                  ),
+                                );
                               },
                               style: ElevatedButton.styleFrom(
                                 backgroundColor: Colors.green,
@@ -209,10 +218,18 @@ class _MeusCursosState extends State<MeusCursos> {
                               child: const Text('Continuar'),
                             ),
                           
-                          // Botão Detalhes
+                          // Botão Detalhes (sempre visível)
                           TextButton(
                             onPressed: () {
-                              // Lógica para ver detalhes do curso
+                              // Navegar para a tela de detalhes do curso
+                              Navigator.push(
+                                context,
+                                MaterialPageRoute(
+                                  builder: (context) => CursoConteudo(
+                                    courseId: enrollment.course.id,
+                                  ),
+                                ),
+                              );
                             },
                             child: const Text('Ver detalhes'),
                           ),

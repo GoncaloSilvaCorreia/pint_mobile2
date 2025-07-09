@@ -1,3 +1,5 @@
+import 'package:pint_mobile/models/seccao.dart';
+
 class Course {
   final int id;
   final String title;
@@ -16,6 +18,8 @@ class Course {
   final int? hours;
   final int? vacancies;
   final bool enrollmentsOpen; // Novo campo: inscricoes
+  final List<Section> sections;
+  
 
   Course({
     required this.id,
@@ -35,6 +39,7 @@ class Course {
     this.hours,
     this.vacancies,
     required this.enrollmentsOpen,
+    required this.sections,
   });
 
   factory Course.fromJson(Map<String, dynamic> json) {
@@ -56,6 +61,10 @@ class Course {
       hours: json['hours'] as int?,
       vacancies: json['vacancies'] as int?,
       enrollmentsOpen: json['inscricoes'] as bool? ?? false,
+      sections: (json['sections'] as List<dynamic>?)
+          ?.map((section) => Section.fromJson(section))
+          .toList() ??
+          [],
     );
   }
 
@@ -77,6 +86,7 @@ class Course {
         'hours': hours,
         'vacancies': vacancies,
         'enrollmentsOpen': enrollmentsOpen,
+        'sections': sections.map((section) => section.toJson()).toList(),
       };
 
   // Métodos auxiliares
