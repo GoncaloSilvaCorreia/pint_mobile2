@@ -23,6 +23,7 @@ class _ContactoState extends State<Contacto> {
 
   bool _isLoading = false;
   String? _selectedSubject;
+  String? _successMessage; // Adicionado para mensagem de sucesso
 
   final List<String> _subjects = [
     'Criar Conta',
@@ -34,6 +35,40 @@ class _ContactoState extends State<Contacto> {
 
   final ApiClient _apiClient = ApiClient(); 
 
+  // Função para mostrar diálogo de sucesso
+  void _mostrarSucesso(String mensagem) {
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('✅ Formulário Enviado'),
+        content: Text(mensagem),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: const Text('OK', style: TextStyle(color: Colors.blue)),
+          ),
+        ],
+      ),
+    );
+  }
+
+  // Função para mostrar diálogo de erro
+  void _mostrarErro(String mensagem) {
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('❌ Erro no Envio'),
+        content: SingleChildScrollView(child: Text(mensagem)),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: const Text('OK', style: TextStyle(color: Colors.blue)),
+          )
+        ],
+      ),
+    );
+  }
+
   Future<void> _handleSubmit() async {
     setState(() {
       _workerNumberError = null;
@@ -41,6 +76,7 @@ class _ContactoState extends State<Contacto> {
       _emailError = null;
       _subjectError = null;
       _messageError = null;
+      _successMessage = null; // Limpar mensagem anterior
     });
 
     String workerNumber = _workerNumberController.text.trim();
@@ -68,6 +104,11 @@ class _ContactoState extends State<Contacto> {
     if (email.isEmpty) {
       setState(() {
         _emailError = 'Por favor, insira o seu e-mail Institucional.';
+      });
+      hasError = true;
+    } else if (!_isValidEmail(email)) {
+      setState(() {
+        _emailError = 'Por favor, insira um e-mail válido.';
       });
       hasError = true;
     }
@@ -100,30 +141,48 @@ class _ContactoState extends State<Contacto> {
       );
 
       if (response['success'] == true) {
-
+        // Limpar campos após envio bem-sucedido
         _workerNumberController.clear();
         _fullNameController.clear();
         _emailController.clear();
         _messageController.clear();
         setState(() {
           _selectedSubject = null;
+          _successMessage = response['message']; // Armazenar mensagem
         });
 
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text(response['message'])),
-        );
+        _mostrarSucesso(_successMessage!); // Mostrar alerta de sucesso
       } else {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Erro: ${response['message']}')),
-        );
+        // Tratar erros específicos da API
+        String errorMessage = response['message'] ?? 'Erro desconhecido ao enviar formulário';
+        
+        // Destacar campo de e-mail se o erro estiver relacionado
+        if (errorMessage.toLowerCase().contains('email')) {
+          setState(() => _emailError = errorMessage);
+        }
+        
+        _mostrarErro(errorMessage);
       }
     } catch (e) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Erro de comunicação: ${e.toString()}')),
-      );
+      String errorMessage = 'Erro de comunicação: ${e.toString()}';
+      
+      // Tratar especificamente erros de formato de e-mail
+      if (e.toString().contains('email')) {
+        setState(() => _emailError = 'Formato de e-mail inválido');
+      }
+      
+      _mostrarErro(errorMessage);
     } finally {
       setState(() => _isLoading = false);
     }
+  }
+
+  // Função para validar formato de e-mail
+  bool _isValidEmail(String email) {
+    final emailRegex = RegExp(
+      r'^[\w-]+(\.[\w-]+)*@([\w-]+\.)+[a-zA-Z]{2,7}$'
+    );
+    return emailRegex.hasMatch(email);
   }
 
   @override
@@ -207,7 +266,13 @@ class _ContactoState extends State<Contacto> {
                 hintText: 'Insira o seu e-mail Institucional',
                 border: const OutlineInputBorder(),
                 errorText: _emailError,
+                // Destacar campo quando há erro
+                errorStyle: TextStyle(color: Colors.red[700]),
+                focusedErrorBorder: OutlineInputBorder(
+                  borderSide: BorderSide(color: Colors.red[700]!, width: 2.0),
+                ),
               ),
+              keyboardType: TextInputType.emailAddress,
             ),
             const SizedBox(height: 16),
             const Text('Assunto'),
@@ -257,6 +322,19 @@ class _ContactoState extends State<Contacto> {
                     : const Text('Enviar formulário', style: TextStyle(color: Colors.white)),
               ),
             ),
+            // Mostrar mensagem de sucesso permanentemente
+            if (_successMessage != null) ...[
+              const SizedBox(height: 16),
+              Center(
+                child: Text(
+                  _successMessage!,
+                  style: TextStyle(
+                    color: Colors.green[700],
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+              ),
+            ],
           ],
         ),
       ),

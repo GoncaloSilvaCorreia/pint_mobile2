@@ -34,52 +34,47 @@ class EnrollmentService {
       Uri.parse('$baseUrl/inscricoes/create'),
       headers: {'Content-Type': 'application/json'},
       body: jsonEncode({
-        'id_curso': courseId,
-        'id_utilizador': userId,
+        'courseId': courseId,
+        'userId': userId,
       }),
     );
 
     if (response.statusCode == 201) {
       try {
-        // Tentar decodificar a resposta apenas se o corpo não estiver vazio
-        if (response.body.isNotEmpty) {
-          final data = jsonDecode(response.body);
-          return Enrollment.fromJson(data);
-        } else {
-          // Se a resposta estiver vazia, criar um objeto Enrollment manualmente
-          return Enrollment(
-            id: 0, // ID temporário
-            courseId: courseId,
-            userId: userId,
-            enrollmentDate: DateTime.now(),
-            status: "Pendente",
-            rating: null,
-            course: Course(
-              id: courseId,
-              title: "",
-              type: false,
-              description: "",
-              instructor: "",
-              createdAt: DateTime.now(),
-              status: false,
-              visible: false,
-              topicId: 0,
-              level: "",
-              startDate: DateTime.now(),
-              endDate: DateTime.now(),
-              enrollmentsOpen: false,
-            ),
-          );
-        }
+        final data = jsonDecode(response.body);
+        return Enrollment.fromJson(data);
       } catch (e) {
-        throw Exception('Resposta inválida do servidor: $e');
-        }
+        // Se a resposta não puder ser parseada, cria uma inscrição manual
+        return Enrollment(
+          id: 0,
+          courseId: courseId,
+          userId: userId,
+          enrollmentDate: DateTime.now(),
+          status: "Pendente",
+          rating: null,
+          course: Course(
+            id: courseId,
+            title: "",
+            type: false,
+            description: "",
+            instructor: "",
+            createdAt: DateTime.now(),
+            status: false,
+            visible: false,
+            topicId: 0,
+            level: "",
+            startDate: DateTime.now(),
+            endDate: DateTime.now(),
+            enrollmentsOpen: false,
+          ),
+        );
+      }
     } else {
       String errorMessage = 'Falha ao criar inscrição';
       if (response.body.isNotEmpty) {
         try {
           final errorData = jsonDecode(response.body);
-          errorMessage = errorData['error'] ?? errorMessage;
+          errorMessage = errorData['error'] ?? errorData['message'] ?? errorMessage;
         } catch (_) {
           errorMessage = response.body;
         }

@@ -70,11 +70,8 @@ class _CourseDetailScreenState extends State<CourseDetailScreen> {
       
       _mostrarConfirmacao();
     } catch (e) {
-      String errorMessage = e.toString();
-      if (e.toString().contains('Null') || e.toString().contains('Map<String, dynamic>')) {
-        _mostrarConfirmacao();
-        return;
-      }
+      String errorMessage = 'Erro ao proceder á inscrição no curso ${widget.course.title}';
+      
       _mostrarErro(errorMessage);
     } finally {
       setState(() => _isLoading = false);
@@ -105,7 +102,9 @@ class _CourseDetailScreenState extends State<CourseDetailScreen> {
       context: context,
       builder: (context) => AlertDialog(
         title: const Text('❌ Erro na Inscrição'),
-        content: Text(mensagem),
+        content: SingleChildScrollView(
+          child: Text(mensagem),
+        ),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context),
