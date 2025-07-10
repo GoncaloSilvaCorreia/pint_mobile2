@@ -2,6 +2,7 @@ import 'dart:convert';
 import 'package:pint_mobile/models/utilizador.dart';
 import 'package:pint_mobile/api/api.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:pint_mobile/models/certificados.dart';
 
 class ApiUtilizador {
   final ApiClient _apiClient = ApiClient();
@@ -62,5 +63,17 @@ class ApiUtilizador {
       return await getUtilizadorByWorkerNumber(workerNumber);
     }
     return null;
+  }
+
+  /// Busca os certificados (notas) do utilizador pelo workerNumber
+  Future<List<Certificate>> getCertificadosByWorkerNumber(String workerNumber) async {
+    final response = await _apiClient.get('/users/id/$workerNumber');
+    if (response.statusCode == 200) {
+      final data = jsonDecode(response.body);
+      List certificates = data['certificates'];
+      return certificates.map<Certificate>((json) => Certificate.fromJson(json)).toList();
+    } else {
+      throw Exception('Erro ao carregar certificados');
+    }
   }
 }

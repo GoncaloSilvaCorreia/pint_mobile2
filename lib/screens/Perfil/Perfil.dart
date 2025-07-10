@@ -4,6 +4,7 @@ import 'package:pint_mobile/models/utilizador.dart';
 import 'package:pint_mobile/utils/Rodape.dart';
 import 'package:pint_mobile/utils/SideMenu.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:pint_mobile/models/certificados.dart'; // Importe o modelo Certificate
 
 class Perfil extends StatefulWidget {
   final String workerNumber;
@@ -19,6 +20,7 @@ class PerfilScreenState extends State<Perfil> {
   late Future<Utilizador> _futureUtilizador;
   String _workerNumber = '';
   late Future<List<Map<String, dynamic>>> _futureCursos;
+  late Future<List<Certificate>> _futureCertificados; // Novo
 
   @override
   void initState() {
@@ -26,6 +28,7 @@ class PerfilScreenState extends State<Perfil> {
     _loadWorkerNumber();
     _futureUtilizador = api.getUtilizadorByWorkerNumber(widget.workerNumber);
     _futureCursos = api.getCursosByWorkerNumber(widget.workerNumber);
+    _futureCertificados = api.getCertificadosByWorkerNumber(widget.workerNumber); // Novo
   }
 
   Future<void> _loadWorkerNumber() async {
@@ -47,7 +50,6 @@ class PerfilScreenState extends State<Perfil> {
         centerTitle: true,
         backgroundColor: Colors.grey[300],
         elevation: 0,
-        iconTheme: const IconThemeData(color: Colors.white),
       ),
       body: FutureBuilder<Utilizador>(
         future: _futureUtilizador,
@@ -62,84 +64,115 @@ class PerfilScreenState extends State<Perfil> {
                   cursos = cursosSnapshot.data!;
                 }
 
-                return SingleChildScrollView(
-                  padding: const EdgeInsets.all(16),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      // Cabeçalho com informações do usuário
-                      Container(
-                        padding: const EdgeInsets.all(24),
-                        decoration: BoxDecoration(
-                          color: Colors.white,
-                          borderRadius: BorderRadius.circular(16),
-                          boxShadow: [
-                            BoxShadow(
-                              color: const Color.fromARGB(255, 255, 255, 255).withOpacity(0.2),
-                              blurRadius: 10,
-                              spreadRadius: 3,
-                            ),
-                          ],
-                        ),
-                        child: Column(
-                          children: [
-                            Stack(
-                              alignment: Alignment.bottomRight,
-                              children: [
-                                CircleAvatar(
-                                  radius: 60,
-                                  backgroundImage: NetworkImage(
-                                    utilizador.pfp ?? 'https://via.placeholder.com/150',
-                                  ),
-                                  backgroundColor: Colors.grey[200],
-                                  child: utilizador.pfp == null
-                                      ? const Icon(Icons.person, size: 50, color: Colors.grey)
-                                      : null,
+                return FutureBuilder<List<Certificate>>(
+                  future: _futureCertificados,
+                  builder: (context, certificadosSnapshot) {
+                    // Mapa para notas: courseId -> grade
+                    Map<int, int> notasMap = {};
+                    if (certificadosSnapshot.hasData) {
+                      for (var cert in certificadosSnapshot.data!) {
+                        notasMap[cert.courseId] = cert.grade;
+                      }
+                    }
+
+                    // Atualiza os cursos com as notas dos certificados
+                    List<Map<String, dynamic>> cursosAtualizados = cursos.map((curso) {
+                      int? courseId = curso['id'] as int?;
+                      if (courseId != null && notasMap.containsKey(courseId)) {
+                        return {
+                          ...curso,
+                          'nota': notasMap[courseId], // Atualiza a nota
+                          'certificado': true, // Marca que tem certificado
+                        };
+                      } else {
+                        // Mantém o curso como está, mas sem certificado
+                        return {
+                          ...curso,
+                          'certificado': curso['certificado'] ?? false,
+                        };
+                      }
+                    }).toList();
+
+                    return SingleChildScrollView(
+                      padding: const EdgeInsets.all(16),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          // Cabeçalho com informações do usuário
+                          Container(
+                            padding: const EdgeInsets.all(24),
+                            decoration: BoxDecoration(
+                              color: Colors.white,
+                              borderRadius: BorderRadius.circular(16),
+                              boxShadow: [
+                                BoxShadow(
+                                  color: const Color.fromARGB(255, 255, 255, 255).withOpacity(0.2),
+                                  blurRadius: 10,
+                                  spreadRadius: 3,
                                 ),
                               ],
                             ),
-                            const SizedBox(height: 20),
-                            Text(
-                              utilizador.nome,
-                              style: const TextStyle(
-                                fontSize: 24,
+                            child: Column(
+                              children: [
+                                Stack(
+                                  alignment: Alignment.bottomRight,
+                                  children: [
+                                    CircleAvatar(
+                                      radius: 60,
+                                      backgroundImage: NetworkImage(
+                                        utilizador.pfp ?? 'https://via.placeholder.com/150',
+                                      ),
+                                      backgroundColor: Colors.grey[200],
+                                      child: utilizador.pfp == null
+                                          ? const Icon(Icons.person, size: 50, color: Colors.grey)
+                                          : null,
+                                    ),
+                                  ],
+                                ),
+                                const SizedBox(height: 20),
+                                Text(
+                                  utilizador.nome,
+                                  style: const TextStyle(
+                                    fontSize: 24,
+                                    fontWeight: FontWeight.bold,
+                                    color: Colors.black87,
+                                  ),
+                                ),
+                                const SizedBox(height: 8),
+                                Text(
+                                  utilizador.primaryRole ?? "Função não definida",
+                                  style: TextStyle(
+                                    fontSize: 16,
+                                    color: Colors.grey[700],
+                                  ),
+                                ),
+                                const SizedBox(height: 20),
+                                _buildInfoCard(Icons.badge, "ID", utilizador.workerNumber),
+                                const SizedBox(height: 12),
+                                _buildInfoCard(Icons.email, "E-mail", utilizador.email),
+                              ],
+                            ),
+                          ),
+                          
+                          const SizedBox(height: 24),
+                          
+                          // Seção de Cursos Concluídos
+                          const Padding(
+                            padding: EdgeInsets.only(left: 8.0, bottom: 12),
+                            child: Text(
+                              "Cursos Concluídos",
+                              style: TextStyle(
+                                fontSize: 20,
                                 fontWeight: FontWeight.bold,
                                 color: Colors.black87,
                               ),
                             ),
-                            const SizedBox(height: 8),
-                            Text(
-                              utilizador.primaryRole ?? "Função não definida",
-                              style: TextStyle(
-                                fontSize: 16,
-                                color: Colors.grey[700],
-                              ),
-                            ),
-                            const SizedBox(height: 20),
-                            _buildInfoCard(Icons.badge, "ID", utilizador.workerNumber),
-                            const SizedBox(height: 12),
-                            _buildInfoCard(Icons.email, "E-mail", utilizador.email),
-                          ],
-                        ),
-                      ),
-                      
-                      const SizedBox(height: 24),
-                      
-                      // Seção de Cursos Concluídos
-                      const Padding(
-                        padding: EdgeInsets.only(left: 8.0, bottom: 12),
-                        child: Text(
-                          "Cursos Concluídos",
-                          style: TextStyle(
-                            fontSize: 20,
-                            fontWeight: FontWeight.bold,
-                            color: Colors.black87,
                           ),
-                        ),
+                          _buildCoursesSection(cursosAtualizados), // Passa a lista atualizada
+                        ],
                       ),
-                      _buildCoursesSection(cursos),
-                    ],
-                  ),
+                    );
+                  },
                 );
               },
             );
@@ -200,73 +233,6 @@ class PerfilScreenState extends State<Perfil> {
     );
   }
 
-  // Widget para a seção de preferências
-  Widget _buildPreferencesSection(List<Map<String, dynamic>> interests) {
-    if (interests.isEmpty) {
-      return Container(
-        padding: const EdgeInsets.all(24),
-        decoration: BoxDecoration(
-          color: Colors.white,
-          borderRadius: BorderRadius.circular(16),
-          boxShadow: [
-            BoxShadow(
-              color: Colors.grey.withOpacity(0.1),
-              blurRadius: 6,
-              spreadRadius: 2,
-            )
-          ],
-        ),
-        child: const Center(
-          child: Text(
-            "Nenhum interesse adicionado",
-            style: TextStyle(fontSize: 16, color: Colors.grey),
-          ),
-        ),
-      );
-    }
-
-    return Container(
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(16),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.grey.withOpacity(0.1),
-            blurRadius: 6,
-            spreadRadius: 2,
-          )
-        ],
-      ),
-      child: Column(
-        children: [
-          for (var interest in interests)
-            Padding(
-              padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 16),
-              child: Row(
-                children: [
-                  const Icon(Icons.favorite, color: Colors.red, size: 20),
-                  const SizedBox(width: 12),
-                  Expanded(
-                    child: Text(
-                      interest["description"],
-                      style: const TextStyle(fontSize: 16),
-                    ),
-                  ),
-                  IconButton(
-                    icon: const Icon(Icons.close, size: 20),
-                    color: Colors.grey,
-                    onPressed: () {
-                      // Lógica para remover preferência
-                    },
-                  ),
-                ],
-              ),
-            ),
-        ],
-      ),
-    );
-  }
-
   // Widget para a seção de cursos
   Widget _buildCoursesSection(List<Map<String, dynamic>> cursos) {
     if (cursos.isEmpty) {
@@ -319,9 +285,9 @@ class PerfilScreenState extends State<Perfil> {
             child: const Row(
               children: [
                 Expanded(
-                  flex: 1,
+                  flex: 3,
                   child: Text(
-                    "ID",
+                    "Curso",
                     style: TextStyle(
                       color: Colors.white,
                       fontWeight: FontWeight.bold,
@@ -331,7 +297,7 @@ class PerfilScreenState extends State<Perfil> {
                 Expanded(
                   flex: 3,
                   child: Text(
-                    "Nome do Curso",
+                    "Nº Horas",
                     style: TextStyle(
                       color: Colors.white,
                       fontWeight: FontWeight.bold,
@@ -339,7 +305,17 @@ class PerfilScreenState extends State<Perfil> {
                   ),
                 ),
                 Expanded(
-                  flex: 1,
+                  flex: 2,
+                  child: Text(
+                    "Nota",
+                    style: TextStyle(
+                      color: Colors.white,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                ),
+                Expanded(
+                  flex: 3,
                   child: Center(
                     child: Text(
                       "Cert.",
@@ -368,19 +344,27 @@ class PerfilScreenState extends State<Perfil> {
                 child: Row(
                   children: [
                     Expanded(
-                      flex: 1,
-                      child: Text(
-                        cursos[i]["id"].toString(),
-                        style: const TextStyle(fontWeight: FontWeight.w500),
-                      ),
-                    ),
-                    Expanded(
                       flex: 3,
                       child: Text(
                         cursos[i]["title"],
                         style: const TextStyle(fontSize: 15),
                       ),
                     ),
+                    Expanded(
+                      flex: 5,
+                      child: Text(
+                        cursos[i]["horas"].toString(),
+                        style: const TextStyle(fontSize: 15),
+                      ),
+                    ),
+                    Expanded(
+                      flex: 3,
+                      child: Text(
+                        cursos[i]["nota"]?.toString() ?? "--", // Exibe nota ou "--" se não existir
+                        style: const TextStyle(fontSize: 15),
+                      ),
+                    ),
+                    
                     Expanded(
                       flex: 1,
                       child: Center(

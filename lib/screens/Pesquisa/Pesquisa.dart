@@ -29,7 +29,7 @@ class _PesquisaState extends State<Pesquisa> {
   String _searchQuery = '';
   final TextEditingController _searchController = TextEditingController();
   bool _isSearchMode = false;
-
+  
   @override
   void initState() {
     super.initState();
@@ -106,7 +106,9 @@ class _PesquisaState extends State<Pesquisa> {
       bottomNavigationBar: Rodape(workerNumber: _workerNumber),
       appBar: AppBar(
         backgroundColor: Colors.grey[300],
-        title: const Text('Pesquisa'),
+        title: const Text('Pesquisa', 
+            style: TextStyle(fontWeight: FontWeight.bold, color: Color.fromARGB(255, 0, 0, 0))),
+        centerTitle: true,
         leading: _currentStep != 'categories' || _isSearchMode
             ? IconButton(
                 icon: const Icon(Icons.arrow_back),

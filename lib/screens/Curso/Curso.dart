@@ -50,7 +50,7 @@ class _CursoState extends State<Curso> {
       final data = jsonDecode(response.body);
       final users = data['users'] as List;
       final user = users.firstWhere(
-        (u) => u['workerNumber'] == trainerId,
+        (u) => u['id'].toString() == trainerId, // alterado aqui
         orElse: () => null,
       );
       return user?['name'] ?? 'Desconhecido';
@@ -126,7 +126,7 @@ class _CursoState extends State<Curso> {
     bool podeInscrever = course.enrollmentsOpen && !semVagas && !inscritoPendente && !inscritoAtivo;
 
     return Scaffold(
-      backgroundColor: Colors.grey[50],
+      backgroundColor: Colors.grey[300],
       endDrawer: const SideMenu(),
       appBar: AppBar(
         title: const Text("Detalhes do Curso", 
