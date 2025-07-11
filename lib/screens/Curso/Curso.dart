@@ -41,19 +41,19 @@ class _CursoState extends State<Curso> {
     });
   }
 
-  Future<String> getTrainerName(String trainerId) async {
+  Future<String> getTrainerName(String trainerWorkerNumber) async {
+    // Busca o nome do formador pelo workerNumber diretamente na API correta
     final response = await http.get(
-      Uri.parse('https://pint-13nr.onrender.com/api/users'),
+      Uri.parse('https://pint-13nr.onrender.com/api/users/id/$trainerWorkerNumber'),
     );
 
     if (response.statusCode == 200) {
       final data = jsonDecode(response.body);
-      final users = data['users'] as List;
-      final user = users.firstWhere(
-        (u) => u['id'].toString() == trainerId, // alterado aqui
-        orElse: () => null,
-      );
-      return user?['name'] ?? 'Desconhecido';
+      if (data['success'] == true && data['user'] != null) {
+        return data['user']['name'] ?? 'Desconhecido';
+      } else {
+        return 'Desconhecido';
+      }
     } else {
       throw Exception('Erro ao carregar formador');
     }

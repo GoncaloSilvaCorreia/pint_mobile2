@@ -47,6 +47,17 @@ class _TelaPrincipalState extends State<TelaPrincipal> {
   }
 
   Widget _buildCourseCard(Course course) {
+    String tipoCurso;
+    final dynamic tipo = course.courseType;
+    if (tipo is bool) {
+      tipoCurso = tipo ? 'Assíncrono' : 'Síncrono';
+    } else if (tipo is String) {
+      tipoCurso = (tipo.toLowerCase() == 'true' || tipo.toLowerCase() == 'assíncrono' || tipo.toLowerCase() == 'assincrono')
+          ? 'Assíncrono'
+          : 'Síncrono';
+    } else {
+      tipoCurso = 'Síncrono';
+    }
     return GestureDetector(
       onTap: () async {
         SharedPreferences prefs = await SharedPreferences.getInstance();
@@ -84,7 +95,6 @@ class _TelaPrincipalState extends State<TelaPrincipal> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
-            // ... resto do teu código do card (imagem, padding, textos etc)
             ClipRRect(
               borderRadius: const BorderRadius.vertical(top: Radius.circular(16)),
               child: Image.network(
@@ -109,7 +119,6 @@ class _TelaPrincipalState extends State<TelaPrincipal> {
                 },
               ),
             ),
-            // ... resto dos widgets de título, descrição, infos
             Padding(
               padding: const EdgeInsets.all(20),
               child: Column(
@@ -124,6 +133,21 @@ class _TelaPrincipalState extends State<TelaPrincipal> {
                     ),
                   ),
                   const SizedBox(height: 12),
+                  // Tipo do curso
+                  Row(
+                    children: [
+                      const SizedBox(width: 6),
+                      Text(
+                        tipoCurso,
+                        style: const TextStyle(
+                          fontSize: 15,
+                          color: Colors.grey,
+                          fontWeight: FontWeight.w600,
+                        ),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 8),
                   const Divider(height: 2, thickness: 1, color: Colors.grey),
                   const SizedBox(height: 12),
                   Text(

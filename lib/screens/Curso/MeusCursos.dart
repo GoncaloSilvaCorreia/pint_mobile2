@@ -71,7 +71,7 @@ class _MeusCursosState extends State<MeusCursos> {
       case "Pendente":
         return Colors.orange;
       case "Em curso":
-        return Colors.green;
+        return Color(0xFF3F51B5);
       case "Concluído":
         return Colors.grey;
       default:
@@ -82,7 +82,15 @@ class _MeusCursosState extends State<MeusCursos> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text('Meus Cursos')),
+      backgroundColor: Colors.grey[300],
+      appBar: AppBar(
+        title: const Text('Meus Cursos',
+          style: TextStyle(fontWeight: FontWeight.bold, color: Colors.black)
+        ),
+        centerTitle: true,
+        backgroundColor: Colors.grey[300],
+        elevation: 0,  
+      ), 
       endDrawer: const SideMenu(),
       body: FutureBuilder<List<Enrollment>>(
         future: _futureInscricoes,
@@ -169,37 +177,18 @@ class _MeusCursosState extends State<MeusCursos> {
                         ],
                       ),
                       const SizedBox(height: 16),
-                      // Barra de progresso simulada
-                      if (estado == "Em curso")
-                        Column(
-                          children: [
-                            LinearProgressIndicator(
-                              value: 0.4,
-                              backgroundColor: Colors.grey[300],
-                              color: Colors.green,
-                              minHeight: 8,
-                              borderRadius: BorderRadius.circular(4),
-                            ),
-                            const SizedBox(height: 8),
-                            const Text(
-                              '40% concluído',
-                              style: TextStyle(
-                                fontSize: 12,
-                                color: Colors.grey,
-                              ),
-                            ),
-                          ],
-                        ),
-                      const SizedBox(height: 16),
                       // Botões de ação
                       Row(
                         mainAxisAlignment: MainAxisAlignment.spaceBetween,
                         children: [
-                          // Botão Continuar (apenas para cursos em andamento)
+                          if (estado == "Pendente")
+                            Text(
+                              "Aguardando aprovação",
+                              style: TextStyle(color: Colors.orange[800], fontWeight: FontWeight.bold),
+                            ),
                           if (estado == "Em curso")
                             ElevatedButton(
                               onPressed: () {
-                                // Navegar para a tela de conteúdo do curso
                                 Navigator.push(
                                   context,
                                   MaterialPageRoute(
@@ -210,23 +199,23 @@ class _MeusCursosState extends State<MeusCursos> {
                                 );
                               },
                               style: ElevatedButton.styleFrom(
-                                backgroundColor: Colors.green,
+                                backgroundColor: Color(0xFF3F51B5),
                                 shape: RoundedRectangleBorder(
                                   borderRadius: BorderRadius.circular(20),
                                 ),
                               ),
-                              child: const Text('Continuar'),
+                              child: const Text('Continuar', 
+                                style: TextStyle(color: Colors.white),
+                              ),
                             ),
-                          
-                          // Botão Detalhes (sempre visível)
                           TextButton(
                             onPressed: () {
-                              // Navegar para a tela de detalhes do curso
                               Navigator.push(
                                 context,
                                 MaterialPageRoute(
-                                  builder: (context) => CursoConteudo(
-                                    courseId: enrollment.course.id,
+                                  builder: (context) => Curso(
+                                    course: enrollment.course,
+                                    enrollment: enrollment,
                                   ),
                                 ),
                               );

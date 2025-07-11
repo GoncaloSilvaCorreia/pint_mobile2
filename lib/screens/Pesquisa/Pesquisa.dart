@@ -368,42 +368,62 @@ class _PesquisaState extends State<Pesquisa> {
         final course = results[index];
         return Card(
           margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-          child: ListTile(
-            title: Text(course.title),
-            subtitle: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
+          child: Container(
+            padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 8),
+            child: Row(
               children: [
-                Text('Tipo: ${course.courseType}'),
-                Text('Nível: ${course.level}'),
-                Text('Início: ${DateFormat('dd/MM/yyyy').format(course.startDate)}'),
-              ],
-            ),
-            onTap: () async {
-              SharedPreferences prefs = await SharedPreferences.getInstance();
-              int userId = prefs.getInt('userId') ?? 0;
+                // Info do curso
+                Expanded(
+                  child: ListTile(
+                    contentPadding: EdgeInsets.zero,
+                    title: Text(course.title),
+                    subtitle: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text('Tipo: ${course.courseType}'),
+                        Text('Nível: ${course.level}'),
+                        Text('Início: ${DateFormat('dd/MM/yyyy').format(course.startDate)}'),
+                      ],
+                    ),
+                    onTap: () async {
+                      SharedPreferences prefs = await SharedPreferences.getInstance();
+                      int userId = prefs.getInt('userId') ?? 0;
 
-              if (userId == null) {
-                ScaffoldMessenger.of(context).showSnackBar(
-                  const SnackBar(content: Text('Erro: Utilizador não encontrado.')),
-                );
-                return;
-              }
+                      Enrollment? enrollment = await _searchManager.getEnrollmentForCourseAndUser(
+                        course.id,
+                        userId,
+                      );
 
-              Enrollment? enrollment = await _searchManager.getEnrollmentForCourseAndUser(
-                course.id,
-                userId,
-              );
-
-              Navigator.push(
-                context,
-                MaterialPageRoute(
-                  builder: (context) => Curso(
-                    course: course,
-                    enrollment: enrollment,
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) => Curso(
+                            course: course,
+                            enrollment: enrollment,
+                          ),
+                        ),
+                      );
+                    },
                   ),
                 ),
-              );
-            },
+                // Imagem do curso à direita
+                ClipRRect(
+                  borderRadius: BorderRadius.circular(8),
+                  child: Image.network(
+                    course.image ?? 'https://via.placeholder.com/100',
+                    width: 80,
+                    height: 80,
+                    fit: BoxFit.cover,
+                    errorBuilder: (context, error, stackTrace) => Container(
+                      width: 80,
+                      height: 80,
+                      color: Colors.grey[200],
+                      child: const Icon(Icons.image_not_supported, size: 32),
+                    ),
+                  ),
+                ),
+              ],
+            ),
           ),
         );
       },

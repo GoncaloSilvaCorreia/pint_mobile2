@@ -160,7 +160,7 @@ class PerfilScreenState extends State<Perfil> {
                           const Padding(
                             padding: EdgeInsets.only(left: 8.0, bottom: 12),
                             child: Text(
-                              "Cursos Concluídos",
+                              "Cursos Inscritos/Concluídos",
                               style: TextStyle(
                                 fontSize: 20,
                                 fontWeight: FontWeight.bold,
@@ -285,7 +285,7 @@ class PerfilScreenState extends State<Perfil> {
             child: const Row(
               children: [
                 Expanded(
-                  flex: 3,
+                  flex: 4,
                   child: Text(
                     "Curso",
                     style: TextStyle(
@@ -315,7 +315,7 @@ class PerfilScreenState extends State<Perfil> {
                   ),
                 ),
                 Expanded(
-                  flex: 3,
+                  flex: 2,
                   child: Center(
                     child: Text(
                       "Cert.",
@@ -344,29 +344,31 @@ class PerfilScreenState extends State<Perfil> {
                 child: Row(
                   children: [
                     Expanded(
-                      flex: 3,
+                      flex: 4,
                       child: Text(
                         cursos[i]["title"],
                         style: const TextStyle(fontSize: 15),
-                      ),
-                    ),
-                    Expanded(
-                      flex: 5,
-                      child: Text(
-                        cursos[i]["horas"].toString(),
-                        style: const TextStyle(fontSize: 15),
+                        overflow: TextOverflow.ellipsis,
                       ),
                     ),
                     Expanded(
                       flex: 3,
                       child: Text(
-                        cursos[i]["nota"]?.toString() ?? "--", // Exibe nota ou "--" se não existir
+                        cursos[i]["horas"].toString(),
                         style: const TextStyle(fontSize: 15),
+                        textAlign: TextAlign.center,
                       ),
                     ),
-                    
                     Expanded(
-                      flex: 1,
+                      flex: 2,
+                      child: Text(
+                        cursos[i]["nota"]?.toString() ?? "--",
+                        style: const TextStyle(fontSize: 15),
+                        textAlign: TextAlign.center,
+                      ),
+                    ),
+                    Expanded(
+                      flex: 2,
                       child: Center(
                         child: cursos[i].containsKey("certificado") && cursos[i]["certificado"]
                             ? const Icon(Icons.verified, color: Colors.green, size: 24)
