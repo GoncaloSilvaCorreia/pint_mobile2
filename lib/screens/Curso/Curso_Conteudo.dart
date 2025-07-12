@@ -158,6 +158,14 @@ class _CursoConteudo extends State<CursoConteudo> {
   }
 
   Widget _buildResourceItem(Resource resource) {
+    Widget buildText(String? text) {
+      if (text == null || text.isEmpty) return const SizedBox.shrink();
+      return Padding(
+        padding: const EdgeInsets.only(top: 4.0),
+        child: Text(text, style: const TextStyle(fontSize: 15)),
+      );
+    }
+
     switch (resource.typeId) {
       case 1: // PDF
         return Card(
@@ -165,7 +173,13 @@ class _CursoConteudo extends State<CursoConteudo> {
           margin: const EdgeInsets.symmetric(vertical: 6, horizontal: 2),
           child: ListTile(
             leading: Icon(Icons.picture_as_pdf, color: Colors.red, size: 32),
-            title: Text(resource.title ?? 'PDF sem título', style: const TextStyle(fontWeight: FontWeight.bold)),
+            title: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(resource.title ?? 'PDF sem título', style: const TextStyle(fontWeight: FontWeight.bold)),
+                buildText(resource.text),
+              ],
+            ),
             subtitle: const Text('PDF', style: TextStyle(color: Colors.red)),
             trailing: resource.file != null
                 ? IconButton(
@@ -213,7 +227,13 @@ class _CursoConteudo extends State<CursoConteudo> {
           margin: const EdgeInsets.symmetric(vertical: 6, horizontal: 2),
           child: ListTile(
             leading: Icon(Icons.videocam, color: Colors.blue, size: 32),
-            title: Text(resource.title ?? 'Vídeo sem título', style: const TextStyle(fontWeight: FontWeight.bold)),
+            title: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(resource.title ?? 'Vídeo sem título', style: const TextStyle(fontWeight: FontWeight.bold)),
+                buildText(resource.text),
+              ],
+            ),
             subtitle: const Text('Vídeo', style: TextStyle(color: Colors.blue)),
             trailing: resource.link != null
                 ? IconButton(
@@ -251,7 +271,13 @@ class _CursoConteudo extends State<CursoConteudo> {
           margin: const EdgeInsets.symmetric(vertical: 6, horizontal: 2),
           child: ListTile(
             leading: Icon(Icons.link, color: Colors.green, size: 32),
-            title: Text(resource.title ?? 'Link sem título', style: const TextStyle(fontWeight: FontWeight.bold)),
+            title: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(resource.title ?? 'Link sem título', style: const TextStyle(fontWeight: FontWeight.bold)),
+                buildText(resource.text),
+              ],
+            ),
             subtitle: const Text('Link', style: TextStyle(color: Colors.green)),
             trailing: resource.link != null
                 ? IconButton(
@@ -305,7 +331,13 @@ class _CursoConteudo extends State<CursoConteudo> {
           margin: const EdgeInsets.symmetric(vertical: 6, horizontal: 2),
           child: ListTile(
             leading: Icon(Icons.insert_drive_file, color: Colors.grey, size: 32),
-            title: Text(resource.title ?? 'Arquivo sem título', style: const TextStyle(fontWeight: FontWeight.bold)),
+            title: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(resource.title ?? 'Arquivo sem título', style: const TextStyle(fontWeight: FontWeight.bold)),
+                buildText(resource.text),
+              ],
+            ),
             subtitle: const Text('Arquivo', style: TextStyle(color: Colors.grey)),
           ),
         );
