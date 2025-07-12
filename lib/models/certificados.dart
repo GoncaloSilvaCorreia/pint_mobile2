@@ -4,6 +4,7 @@ class Certificate {
   final String? workerNumber;
   final int grade;
   final String? observation;
+  final String? pdfUrl;
 
   Certificate({
     required this.id,
@@ -11,6 +12,7 @@ class Certificate {
     this.workerNumber,
     required this.grade,
     this.observation,
+    this.pdfUrl,
   });
 
   factory Certificate.fromJson(Map<String, dynamic> json) {
@@ -20,6 +22,7 @@ class Certificate {
       workerNumber: json['workerNumber'] as String?,
       grade: json['grade'] as int? ?? 0,
       observation: json['observation'] as String?,
+      pdfUrl: json['pdfUrl'] as String?,
     );
   }
 
@@ -29,5 +32,6 @@ class Certificate {
         'workerNumber': workerNumber,
         'grade': grade,
         'observation': observation,
+        'pdfUrl': pdfUrl,
       };
 }

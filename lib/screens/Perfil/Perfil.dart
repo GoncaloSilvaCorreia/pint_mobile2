@@ -5,6 +5,7 @@ import 'package:pint_mobile/utils/Rodape.dart';
 import 'package:pint_mobile/utils/SideMenu.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:pint_mobile/models/certificados.dart'; // Importe o modelo Certificate
+import 'package:url_launcher/url_launcher.dart';
 
 class Perfil extends StatefulWidget {
   final String workerNumber;
@@ -69,24 +70,25 @@ class PerfilScreenState extends State<Perfil> {
                   future: _futureCertificados,
                   builder: (context, certificadosSnapshot) {
                     // Mapa para notas: courseId -> grade
-                    Map<int, int> notasMap = {};
+                    Map<int, Certificate> certMap = {};
                     if (certificadosSnapshot.hasData) {
                       for (var cert in certificadosSnapshot.data!) {
-                        notasMap[cert.courseId] = cert.grade;
+                        certMap[cert.courseId] = cert;
                       }
                     }
 
-                    // Atualiza os cursos com as notas dos certificados
+                    // Atualiza os cursos com as notas e pdfUrl dos certificados
                     List<Map<String, dynamic>> cursosAtualizados = cursos.map((curso) {
                       int? courseId = curso['id'] as int?;
-                      if (courseId != null && notasMap.containsKey(courseId)) {
+                      if (courseId != null && certMap.containsKey(courseId)) {
+                        final cert = certMap[courseId]!;
                         return {
                           ...curso,
-                          'nota': notasMap[courseId], // Atualiza a nota
-                          'certificado': true, // Marca que tem certificado
+                          'nota': cert.grade,
+                          'certificado': true,
+                          'pdfUrl': cert.pdfUrl,
                         };
                       } else {
-                        // Mantém o curso como está, mas sem certificado
                         return {
                           ...curso,
                           'certificado': curso['certificado'] ?? false,
@@ -372,7 +374,22 @@ class PerfilScreenState extends State<Perfil> {
                       flex: 2,
                       child: Center(
                         child: cursos[i].containsKey("certificado") && cursos[i]["certificado"]
-                            ? const Icon(Icons.verified, color: Colors.green, size: 24)
+                            ? GestureDetector(
+                                onTap: () async {
+                                  final url = cursos[i]["pdfUrl"];
+                                  if (url != null && url.isNotEmpty) {
+                                    final uri = Uri.parse(url);
+                                    if (await canLaunchUrl(uri)) {
+                                      await launchUrl(uri, mode: LaunchMode.externalApplication);
+                                    } else {
+                                      ScaffoldMessenger.of(context).showSnackBar(
+                                        SnackBar(content: Text('Não foi possível abrir o certificado.')),
+                                      );
+                                    }
+                                  }
+                                },
+                                child: const Icon(Icons.verified, color: Colors.green, size: 24),
+                              )
                             : const Icon(Icons.schedule, color: Colors.orange, size: 24),
                       ),
                     ),
