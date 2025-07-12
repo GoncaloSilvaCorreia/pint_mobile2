@@ -17,7 +17,7 @@ class Course {
   final DateTime endDate;
   final int? hours;
   final int? vacancies;
-  final bool enrollmentsOpen; // Novo campo: inscricoes
+  final bool enrollmentsOpen;
   final List<Section> sections;
   
 
@@ -89,22 +89,18 @@ class Course {
         'sections': sections.map((section) => section.toJson()).toList(),
       };
 
-  // Métodos auxiliares
   String get courseType => type ? 'Síncrono' : 'Assíncrono';
   String get statusName => status ? 'Ativo' : 'Inativo';
   String get visibleName => visible ? 'Visível' : 'Invisível';
 
   bool get hasVacancies => vacancies == null || vacancies! > 0;
   
-  // Verifica se o curso pode ser exibido na pesquisa
   bool get shouldDisplayInSearch {
     if (!visible) return false;
     
-    // Cursos síncronos: mostrar se estiverem ativos OU com inscrições abertas
     if (!type) {
       return status || enrollmentsOpen;
     }
-    // Cursos assíncronos: mostrar apenas se estiverem ativos
     return status;
   }
 }

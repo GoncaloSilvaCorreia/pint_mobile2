@@ -8,8 +8,8 @@ import 'package:pint_mobile/models/inscricoes.dart';
 import 'package:pint_mobile/utils/Rodape.dart';
 import 'package:pint_mobile/utils/SideMenu.dart';
 
-import 'package:pint_mobile/screens/Curso/Curso.dart'; // Tela de detalhes do curso
-import 'package:pint_mobile/screens/Curso/Curso_Conteudo.dart'; // Tela de conteúdo do curso
+import 'package:pint_mobile/screens/Curso/Curso.dart'; 
+import 'package:pint_mobile/screens/Curso/Curso_Conteudo.dart'; 
 
 class MeusCursos extends StatefulWidget {
   const MeusCursos({Key? key}) : super(key: key);
@@ -124,7 +124,6 @@ class _MeusCursosState extends State<MeusCursos> {
                     children: [
                       Row(
                         children: [
-                          // Imagem do curso
                           Container(
                             width: 80,
                             height: 80,
@@ -139,7 +138,6 @@ class _MeusCursosState extends State<MeusCursos> {
                             ),
                           ),
                           const SizedBox(width: 16),
-                          // Título e estado
                           Expanded(
                             child: Column(
                               crossAxisAlignment: CrossAxisAlignment.start,
@@ -177,7 +175,6 @@ class _MeusCursosState extends State<MeusCursos> {
                         ],
                       ),
                       const SizedBox(height: 16),
-                      // Botões de ação
                       Row(
                         mainAxisAlignment: MainAxisAlignment.spaceBetween,
                         children: [

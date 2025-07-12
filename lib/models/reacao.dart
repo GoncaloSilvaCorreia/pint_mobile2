@@ -2,7 +2,7 @@ class Reaction {
   final int id;
   final String workerNumber;
   final int commentId;
-  final bool type; // false=Dislike, true=Like
+  final bool type; 
 
   Reaction({
     required this.id,

@@ -85,7 +85,6 @@ class _ForumState extends State<Forum> {
           if (!snapshot.hasData || snapshot.data!.isEmpty) {
             return const Center(child: Text('Nenhum tópico disponível.'));
           }
-          // Inicializa os tópicos e filtrados na primeira renderização
           if (_allTopics.isEmpty) {
             _allTopics = snapshot.data!;
             _filteredTopics = List.from(_allTopics);
@@ -173,8 +172,7 @@ class _ForumState extends State<Forum> {
                                 overflow: TextOverflow.ellipsis,
                               ),
                               const SizedBox(height: 4),
-                              
-                              // Adiciona o conteúdo do primeiro comentário abaixo da descrição
+                            
                               if (topic.firstComment.content.isNotEmpty) ...[
                                 const SizedBox(height: 4),
                                 Text(

@@ -7,22 +7,19 @@ import 'package:pint_mobile/models/certificados.dart';
 class ApiUtilizador {
   final ApiClient _apiClient = ApiClient();
 
-  /// Busca os dados completos do utilizador pelo workerNumber.
   Future<Utilizador> getUtilizadorByWorkerNumber(String workerNumber) async {
     final response = await _apiClient.get('/users/id/$workerNumber');
     if (response.statusCode == 200) {
       final data = jsonDecode(response.body);
       
-      // Obtém o token das SharedPreferences
       final prefs = await SharedPreferences.getInstance();
       final token = prefs.getString('token') ?? '';
       
-      // Combina os dados do usuário com os interesses e token
       final userData = data['user'] as Map<String, dynamic>;
       final combinedData = {
         ...userData,
-        'interests': data['interests'],  // Injeta os interesses
-        'token': token,  // Adiciona o token
+        'interests': data['interests'],
+        'token': token,  // adiciona o token
       };
       
       return Utilizador.fromJson(combinedData);
@@ -31,12 +28,11 @@ class ApiUtilizador {
     }
   }
 
-  /// Retorna a lista de cursos do utilizador pelo workerNumber.
   Future<List<Map<String, dynamic>>> getCursosByWorkerNumber(String workerNumber) async {
     final response = await _apiClient.get('/users/id/$workerNumber');
     if (response.statusCode == 200) {
       final data = jsonDecode(response.body);
-      // Garante que 'courses' é uma lista, mesmo se vier null ou não existir
+
       List cursos = (data['courses'] ?? []) as List;
       return cursos.cast<Map<String, dynamic>>();
     } else {
@@ -44,7 +40,6 @@ class ApiUtilizador {
     }
   }
 
-  /// Retorna a lista de interesses do utilizador pelo workerNumber.
   Future<List<Map<String, dynamic>>> getInteressesByWorkerNumber(String workerNumber) async {
     final response = await _apiClient.get('/users/id/$workerNumber');
     if (response.statusCode == 200) {
@@ -56,7 +51,6 @@ class ApiUtilizador {
     }
   }
 
-  /// Busca o utilizador logado diretamente do SharedPreferences.
   Future<Utilizador?> getUtilizadorLogado() async {
     final prefs = await SharedPreferences.getInstance();
     final workerNumber = prefs.getString('workerNumber');
@@ -66,12 +60,11 @@ class ApiUtilizador {
     return null;
   }
 
-  /// Busca os certificados (notas) do utilizador pelo workerNumber
   Future<List<Certificate>> getCertificadosByWorkerNumber(String workerNumber) async {
     final response = await _apiClient.get('/users/id/$workerNumber');
     if (response.statusCode == 200) {
       final data = jsonDecode(response.body);
-      // Garante que 'certificates' é uma lista, mesmo se vier null ou não existir
+     
       List certificates = (data['certificates'] ?? []) as List;
       return certificates.map<Certificate>((json) => Certificate.fromJson(json)).toList();
     } else {

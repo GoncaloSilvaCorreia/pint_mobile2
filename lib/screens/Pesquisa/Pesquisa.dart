@@ -122,7 +122,7 @@ class _PesquisaState extends State<Pesquisa> {
             padding: const EdgeInsets.all(16.0),
             child: TextField(
               controller: _searchController,
-              onSubmitted: (value) => _performSearch(), // Adicionado para capturar Enter
+              onSubmitted: (value) => _performSearch(),
               decoration: InputDecoration(
                 hintText: 'Pesquisar cursos...',
                 prefixIcon: IconButton(
@@ -339,9 +339,7 @@ class _PesquisaState extends State<Pesquisa> {
     );
   }
 
-  // Método para mostrar resultados da pesquisa direta
   Widget _buildSearchResults() {
-    // Usa o getter público allCourses
     final results = _searchManager.allCourses.where((course) {
       return course.title.toLowerCase().contains(_searchQuery.toLowerCase());
     }).toList();
@@ -372,7 +370,6 @@ class _PesquisaState extends State<Pesquisa> {
             padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 8),
             child: Row(
               children: [
-                // Info do curso
                 Expanded(
                   child: ListTile(
                     contentPadding: EdgeInsets.zero,
@@ -406,7 +403,6 @@ class _PesquisaState extends State<Pesquisa> {
                     },
                   ),
                 ),
-                // Imagem do curso à direita
                 ClipRRect(
                   borderRadius: BorderRadius.circular(8),
                   child: Image.network(

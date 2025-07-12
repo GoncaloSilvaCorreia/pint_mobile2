@@ -19,20 +19,18 @@ class SearchManager {
   List<Category> _categories = [];
   List<Area> _areas = []; 
   List<Topic> _topics = [];
-  List<Course> _allCourses = []; // Lista privada
+  List<Course> _allCourses = []; 
 
-  // Getters públicos para acessar as listas
   List<Category> get categories => _categories;
   List<Area> get areas => _areas;
   List<Topic> get topics => _topics;
-  List<Course> get allCourses => _allCourses; // Getter público
+  List<Course> get allCourses => _allCourses;
 
   Future<void> initialize() async {
     _categories = await _categoryService.getCategories();
     _areas = await _areaService.getAreas();
     _topics = await _topicService.getTopics();
     
-    // Carrega todos os cursos visíveis
     _allCourses = await _courseService.getAllVisibleCourses();
   }
 
@@ -49,7 +47,7 @@ class SearchManager {
   }
 
   List<Course> filterCoursesByType(bool? isAsync) {
-    if (isAsync == null) return _allCourses; // Mostra todos
+    if (isAsync == null) return _allCourses; 
     return _allCourses.where((course) => course.type == isAsync).toList();
   }
 

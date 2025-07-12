@@ -44,7 +44,6 @@ class EnrollmentService {
         final data = jsonDecode(response.body);
         return Enrollment.fromJson(data);
       } catch (e) {
-        // Se a resposta não puder ser parseada, cria uma inscrição manual
         return Enrollment(
           id: 0,
           courseId: courseId,

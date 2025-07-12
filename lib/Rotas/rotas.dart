@@ -35,10 +35,12 @@ final rotas = GoRouter(
       builder: (context, state) => TelaPrincipal(),
     ),
     GoRoute(
+      name: 'Pesquisa',
       path: '/pesquisar',
       builder: (context, state) => const Pesquisa(),
     ),
     GoRoute(
+      name: 'Perfil',
       path: '/perfil',
       builder: (context, state) {
         final workerNumber = state.extra as String?;
@@ -46,6 +48,7 @@ final rotas = GoRouter(
       },
     ),
     GoRoute(
+      name: 'MeusCursos',
       path: '/meus-cursos',
       builder: (context, state) => const MeusCursos(),
     ),
@@ -61,12 +64,10 @@ final rotas = GoRouter(
     final isResetRoute = state.uri.toString() == '/Reset';
     final isContactoRoute = state.uri.toString() == '/Contacto';
 
-    // Permite acesso a Login, Reset e Contacto SEM estar logado
     if (!isLoggedIn && !(isLoginRoute || isResetRoute || isContactoRoute)) {
       return '/Login';
     }
 
-    // Se está logado e está no login, redirect para TelaPrincipal
     if (isLoggedIn && isLoginRoute) {
       return '/TelaPrincipal';
     }

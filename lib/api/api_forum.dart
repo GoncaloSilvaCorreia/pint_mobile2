@@ -20,18 +20,15 @@ class ApiForum {
     final response = await http.get(Uri.parse('$baseUrl/topics'));
 
     if (response.statusCode == 200) {
-      // Parse the JSON response
       final data = json.decode(response.body);
       final List<dynamic> topics = data['topics'] ?? [];
 
       List<Comment> commentsList = [];
       
-      // Process each topic and extract the comments
       for (var topic in topics) {
         var firstCommentJson = topic['firstComment'] ?? {};
         Comment firstComment = Comment.fromJson(firstCommentJson);
 
-        // Add the first comment and its replies to the list
         commentsList.add(firstComment);
       }
 

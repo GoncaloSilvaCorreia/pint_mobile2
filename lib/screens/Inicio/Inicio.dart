@@ -133,7 +133,6 @@ class _TelaPrincipalState extends State<TelaPrincipal> {
                     ),
                   ),
                   const SizedBox(height: 12),
-                  // Tipo do curso
                   Row(
                     children: [
                       const SizedBox(width: 6),
@@ -199,8 +198,8 @@ class _TelaPrincipalState extends State<TelaPrincipal> {
       mainAxisAlignment: MainAxisAlignment.center,
       children: List.generate(length, (index) {
         return Container(
-          width: 10, // Indicador maior
-          height: 10, // Indicador maior
+          width: 10, 
+          height: 10, 
           margin: const EdgeInsets.symmetric(horizontal: 5),
           decoration: BoxDecoration(
             shape: BoxShape.circle,

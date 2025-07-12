@@ -4,7 +4,7 @@ import 'package:pint_mobile/models/utilizador.dart';
 import 'package:pint_mobile/utils/Rodape.dart';
 import 'package:pint_mobile/utils/SideMenu.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-import 'package:pint_mobile/models/certificados.dart'; // Importe o modelo Certificate
+import 'package:pint_mobile/models/certificados.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 class Perfil extends StatefulWidget {
@@ -21,7 +21,7 @@ class PerfilScreenState extends State<Perfil> {
   late Future<Utilizador> _futureUtilizador;
   String _workerNumber = '';
   late Future<List<Map<String, dynamic>>> _futureCursos;
-  late Future<List<Certificate>> _futureCertificados; // Novo
+  late Future<List<Certificate>> _futureCertificados; 
 
   @override
   void initState() {
@@ -29,7 +29,7 @@ class PerfilScreenState extends State<Perfil> {
     _loadWorkerNumber();
     _futureUtilizador = api.getUtilizadorByWorkerNumber(widget.workerNumber);
     _futureCursos = api.getCursosByWorkerNumber(widget.workerNumber);
-    _futureCertificados = api.getCertificadosByWorkerNumber(widget.workerNumber); // Novo
+    _futureCertificados = api.getCertificadosByWorkerNumber(widget.workerNumber);
   }
 
   Future<void> _loadWorkerNumber() async {
@@ -69,7 +69,6 @@ class PerfilScreenState extends State<Perfil> {
                 return FutureBuilder<List<Certificate>>(
                   future: _futureCertificados,
                   builder: (context, certificadosSnapshot) {
-                    // Mapa para notas: courseId -> grade
                     Map<int, Certificate> certMap = {};
                     if (certificadosSnapshot.hasData) {
                       for (var cert in certificadosSnapshot.data!) {
@@ -77,7 +76,6 @@ class PerfilScreenState extends State<Perfil> {
                       }
                     }
 
-                    // Atualiza os cursos com as notas e pdfUrl dos certificados
                     List<Map<String, dynamic>> cursosAtualizados = cursos.map((curso) {
                       int? courseId = curso['id'] as int?;
                       if (courseId != null && certMap.containsKey(courseId)) {
@@ -101,7 +99,6 @@ class PerfilScreenState extends State<Perfil> {
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          // Cabeçalho com informações do usuário
                           Container(
                             padding: const EdgeInsets.all(24),
                             decoration: BoxDecoration(
@@ -158,8 +155,7 @@ class PerfilScreenState extends State<Perfil> {
                           ),
                           
                           const SizedBox(height: 24),
-                          
-                          // Seção de Cursos Concluídos
+
                           const Padding(
                             padding: EdgeInsets.only(left: 8.0, bottom: 12),
                             child: Text(
@@ -171,7 +167,7 @@ class PerfilScreenState extends State<Perfil> {
                               ),
                             ),
                           ),
-                          _buildCoursesSection(cursosAtualizados), // Passa a lista atualizada
+                          _buildCoursesSection(cursosAtualizados), 
                         ],
                       ),
                     );
@@ -195,7 +191,6 @@ class PerfilScreenState extends State<Perfil> {
     );
   }
 
-  // Widget para cartão de informação
   Widget _buildInfoCard(IconData icon, String title, String value) {
     return Container(
       padding: const EdgeInsets.all(16),
@@ -236,7 +231,6 @@ class PerfilScreenState extends State<Perfil> {
     );
   }
 
-  // Widget para a seção de cursos
   Widget _buildCoursesSection(List<Map<String, dynamic>> cursos) {
     if (cursos.isEmpty) {
       return Container(
@@ -275,7 +269,6 @@ class PerfilScreenState extends State<Perfil> {
       ),
       child: Column(
         children: [
-          // Cabeçalho da tabela
           Container(
             padding: const EdgeInsets.symmetric(vertical: 14, horizontal: 16),
             decoration: const BoxDecoration(
@@ -332,7 +325,6 @@ class PerfilScreenState extends State<Perfil> {
               ],
             ),
           ),
-          // Linhas de cursos
           for (int i = 0; i < cursos.length; i++)
             Container(
               decoration: BoxDecoration(
@@ -383,7 +375,6 @@ class PerfilScreenState extends State<Perfil> {
                                       if (await canLaunchUrl(uri)) {
                                         await launchUrl(uri, mode: LaunchMode.externalApplication);
                                       } else {
-                                        // Tenta abrir no navegador padrão se não encontrar componente
                                         await launchUrl(uri, mode: LaunchMode.platformDefault);
                                       }
                                     } catch (e) {

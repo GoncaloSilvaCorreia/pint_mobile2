@@ -15,7 +15,6 @@ class CourseService {
     }
   }
 
-  // Novo método: busca todos os cursos visíveis
   Future<List<Course>> getAllVisibleCourses() async {
     final response = await _apiClient.get('/cursos');
     if (response.statusCode == 200) {

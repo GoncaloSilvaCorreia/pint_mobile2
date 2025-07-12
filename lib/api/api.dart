@@ -52,23 +52,19 @@ class ApiClient {
         body: json.encode({'email': email}),
       );
 
-      // Verifica se a resposta da API foi bem-sucedida (status code 200)
+     
       if (response.statusCode == 200) {
         final responseBody = json.decode(response.body);
 
-        // Se o sucesso for verdadeiro, retorna os dados
         if (responseBody['success'] == true) {
           return responseBody;
         } else {
-          // Se a API retornar sucesso falso, lança uma exceção com a mensagem de erro
           throw Exception(responseBody['message']);
         }
       } else {
-        // Se o código de status não for 200, lança um erro
         throw Exception('Erro inesperado ao tentar resetar a senha');
       }
     } catch (e) {
-      // Se houver erro de rede ou outro, captura e lança um erro apropriado
       throw Exception('Erro de rede: $e');
     }
   }

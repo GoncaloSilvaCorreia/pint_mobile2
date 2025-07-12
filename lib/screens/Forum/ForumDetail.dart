@@ -3,7 +3,7 @@ import 'package:pint_mobile/models/forum_topic.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
 import 'package:shared_preferences/shared_preferences.dart';
-// Dialog para responder comentário
+
 class ReplyDialog extends StatefulWidget {
   final int topicId;
   final int parentCommentId;
@@ -38,7 +38,7 @@ class _ReplyDialogState extends State<ReplyDialog> {
     try {
       final response = await http.post(url, body: json.encode(body), headers: {'Content-Type': 'application/json'});
       if (response.statusCode == 201) {
-        // Adiciona a resposta localmente na tela anterior
+
         Navigator.of(context).pop(replyController.text.trim());
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(content: Text('Resposta enviada!')),
@@ -196,7 +196,6 @@ class ForumDetailScreen extends StatelessWidget {
             ),
             const SizedBox(height: 20),
             Divider(),
-            // Exibe o primeiro comentário (pergunta principal)
             Row(
               children: [
                 CircleAvatar(

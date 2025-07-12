@@ -35,14 +35,13 @@ class _CursoState extends State<Curso> {
 
   Future<void> _loadUserId() async {
     final prefs = await SharedPreferences.getInstance();
-    final userId = prefs.getInt('userId') ?? 0; // Alterado
+    final userId = prefs.getInt('userId') ?? 0;
     setState(() {
       _userId = userId;
     });
   }
 
   Future<String> getTrainerName(String trainerWorkerNumber) async {
-    // Busca o nome do formador pelo workerNumber diretamente na API correta
     final response = await http.get(
       Uri.parse('https://pint2.onrender.com/api/users/id/$trainerWorkerNumber'),
     );
@@ -136,7 +135,7 @@ class _CursoState extends State<Curso> {
           icon: const Icon(Icons.arrow_back, color: Colors.black),
           onPressed: () => Navigator.pop(context),
         ),
-        backgroundColor: Colors.grey[300], // Original header color
+        backgroundColor: Colors.grey[300], 
         elevation: 0,
       ),
       body: _isLoading
@@ -147,7 +146,6 @@ class _CursoState extends State<Curso> {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    // Course Image
                     Container(
                       decoration: BoxDecoration(
                         borderRadius: BorderRadius.circular(16),
@@ -176,7 +174,6 @@ class _CursoState extends State<Curso> {
                     ),
                     const SizedBox(height: 24),
 
-                    // Course Title
                     Text(
                       course.title,
                       style: const TextStyle(
@@ -187,7 +184,6 @@ class _CursoState extends State<Curso> {
                     ),
                     const SizedBox(height: 16),
 
-                    // Trainer Info
                     Container(
                       padding: const EdgeInsets.all(16),
                       decoration: BoxDecoration(
@@ -240,7 +236,6 @@ class _CursoState extends State<Curso> {
                     ),
                     const SizedBox(height: 20),
 
-                    // Description Card
                     Container(
                       padding: const EdgeInsets.all(16),
                       decoration: BoxDecoration(
@@ -276,7 +271,6 @@ class _CursoState extends State<Curso> {
                     ),
                     const SizedBox(height: 20),
 
-                    // Course Details
                     Container(
                       padding: const EdgeInsets.all(16),
                       decoration: BoxDecoration(
@@ -292,7 +286,6 @@ class _CursoState extends State<Curso> {
                       ),
                       child: Column(
                         children: [
-                          // Tipo do curso dentro da caixa de detalhes
                           Row(
                             children: [
                               const Icon(Icons.cast_connected, size: 22, color: Color(0xFF1976D2)),
@@ -352,7 +345,6 @@ class _CursoState extends State<Curso> {
                     ),
                     const SizedBox(height: 24),
 
-                    // Status Indicators
                     if (inscritoAtivo) ...[
                       _buildStatusIndicator(
                         "Já estás inscrito neste curso",
@@ -398,7 +390,6 @@ class _CursoState extends State<Curso> {
                       const SizedBox(height: 16),
                     ],
 
-                    // Enroll Button
                     if (!inscritoAtivo && !inscritoPendente)
                       SizedBox(
                         width: double.infinity,

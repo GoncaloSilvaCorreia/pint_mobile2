@@ -7,7 +7,7 @@ class Enrollment {
   final DateTime enrollmentDate;
   final String status;
   final double? rating;
-  final Course course; // Novo campo adicionado
+  final Course course;
 
   Enrollment({
     required this.id,

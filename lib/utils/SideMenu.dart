@@ -13,7 +13,6 @@ class SideMenu extends StatelessWidget {
       child: SafeArea(
         child: Column(
           children: [
-            // Cabeçalho com título e botão fechar
             Padding(
               padding: const EdgeInsets.symmetric(vertical: 24, horizontal: 16),
               child: Row(
@@ -30,18 +29,16 @@ class SideMenu extends StatelessWidget {
                 ],
               ),
             ),
-            // Itens do menu (todos com a mesma aparência)
             Expanded(
               child: ListView(
                 children: [
                   _buildMenuItem(context, Icons.library_books, 'Cursos', '/pesquisar'),
                   _buildMenuItem(context, Icons.bookmark, 'Meus cursos', '/meus-cursos'),
-                  _buildMenuItem(context, Icons.forum, 'Fórum', '/Forum'), // Corrigido para maiúsculo
+                  _buildMenuItem(context, Icons.forum, 'Fórum', '/Forum'), 
                   _buildMenuItem(context, Icons.account_circle, 'Perfil', '/perfil'),
                 ],
               ),
             ),
-            // Botão sair
             Padding(
               padding: const EdgeInsets.all(16),
               child: ListTile(
@@ -66,16 +63,12 @@ class SideMenu extends StatelessWidget {
       leading: Icon(icon, color: Colors.black),
       title: Text(title, style: const TextStyle(color: Colors.black)),
       onTap: () async {
-        // Obtém o workerNumber de SharedPreferences
         SharedPreferences prefs = await SharedPreferences.getInstance();
         String? workerNumber = prefs.getString('workerNumber');
 
-        // Fecha o menu lateral
         Navigator.of(context).pop();
 
-        // Verifica se o workerNumber está presente
         if (workerNumber != null) {
-          // Navegação para diferentes rotas
           if (route == '/perfil') {
             context.go('/perfil', extra: workerNumber);
           } else {

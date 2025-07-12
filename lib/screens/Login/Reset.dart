@@ -17,7 +17,6 @@ class _ResetPage extends State<Reset> {
   String? _successMessage;
   final ApiClient _apiClient = ApiClient();
 
-  // Função para mostrar diálogo de sucesso
   void _mostrarSucesso(String mensagem) {
     showDialog(
       context: context,
@@ -34,7 +33,6 @@ class _ResetPage extends State<Reset> {
     );
   }
 
-  // Função para mostrar diálogo de erro
   void _mostrarErro(String mensagem) {
     showDialog(
       context: context,
@@ -51,7 +49,6 @@ class _ResetPage extends State<Reset> {
     );
   }
 
-  // Função para validar formato de e-mail
   bool _isValidEmail(String email) {
     final emailRegex = RegExp(
       r'^[\w-]+(\.[\w-]+)*@([\w-]+\.)+[a-zA-Z]{2,7}$'
@@ -92,18 +89,17 @@ class _ResetPage extends State<Reset> {
 
       if (response['success'] == true) {
         setState(() {
-          _successMessage = response['message']; // Mensagem de sucesso
-          _errorMessage = null;  // Limpar qualquer erro anterior.
+          _successMessage = response['message'];
+          _errorMessage = null; 
         });
         
-        _emailController.clear(); // Limpar campo após envio bem-sucedido
-        _mostrarSucesso(_successMessage!); // Mostrar alerta de sucesso
+        _emailController.clear(); 
+        _mostrarSucesso(_successMessage!); 
       } else {
         setState(() {
-          _errorMessage = response['message']; // Mensagem de erro
-          _successMessage = null;  // Limpar qualquer sucesso anterior.
+          _errorMessage = response['message']; 
+          _successMessage = null; 
           
-          // Destacar erro de e-mail se a mensagem contiver "email"
           if (_errorMessage!.toLowerCase().contains('email')) {
             _emailError = _errorMessage;
           }
@@ -116,7 +112,6 @@ class _ResetPage extends State<Reset> {
         _errorMessage = errorMsg;
         _successMessage = null;
         
-        // Destacar erro de e-mail se o erro contiver "email"
         if (e.toString().toLowerCase().contains('email')) {
           _emailError = 'Formato de e-mail inválido';
         }
