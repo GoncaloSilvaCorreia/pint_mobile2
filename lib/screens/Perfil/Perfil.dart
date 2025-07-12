@@ -34,6 +34,7 @@ class PerfilScreenState extends State<Perfil> {
   Future<void> _loadWorkerNumber() async {
     final prefs = await SharedPreferences.getInstance();
     final workerNumber = prefs.getString('workerNumber') ?? '';
+    print('WorkerNumber nas SharedPreferences: $workerNumber');
     setState(() {
       _workerNumber = workerNumber;
     });

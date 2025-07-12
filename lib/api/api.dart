@@ -3,7 +3,7 @@ import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';
 
 class ApiClient {
-  static const String baseUrl = 'https://pint-13nr.onrender.com/api';
+  static const String baseUrl = 'https://pint2.onrender.com/api';
 
   Future<Map<String, String>> getHeaders() async {
     final prefs = await SharedPreferences.getInstance();

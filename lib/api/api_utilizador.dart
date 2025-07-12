@@ -36,7 +36,8 @@ class ApiUtilizador {
     final response = await _apiClient.get('/users/id/$workerNumber');
     if (response.statusCode == 200) {
       final data = jsonDecode(response.body);
-      List cursos = data['courses'];
+      // Garante que 'courses' é uma lista, mesmo se vier null ou não existir
+      List cursos = (data['courses'] ?? []) as List;
       return cursos.cast<Map<String, dynamic>>();
     } else {
       throw Exception('Erro ao carregar cursos');
@@ -70,7 +71,8 @@ class ApiUtilizador {
     final response = await _apiClient.get('/users/id/$workerNumber');
     if (response.statusCode == 200) {
       final data = jsonDecode(response.body);
-      List certificates = data['certificates'];
+      // Garante que 'certificates' é uma lista, mesmo se vier null ou não existir
+      List certificates = (data['certificates'] ?? []) as List;
       return certificates.map<Certificate>((json) => Certificate.fromJson(json)).toList();
     } else {
       throw Exception('Erro ao carregar certificados');

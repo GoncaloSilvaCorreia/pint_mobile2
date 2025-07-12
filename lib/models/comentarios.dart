@@ -1,41 +1,46 @@
 class Comment {
   final int id;
   final int topicId;
-  final String workerNumber;
-  final int? parentCommentId;
+  final String authorName;
+  final String authorAvatar;
   final DateTime commentDate;
   final String content;
-  final bool status;
+  final List<Comment> replies;
 
   Comment({
     required this.id,
     required this.topicId,
-    required this.workerNumber,
-    this.parentCommentId,
+    required this.authorName,
+    required this.authorAvatar,
     required this.commentDate,
     required this.content,
-    required this.status,
+    required this.replies,
   });
 
   factory Comment.fromJson(Map<String, dynamic> json) {
+    var repliesFromJson = json['replies'] as List? ?? [];
+    List<Comment> repliesList = repliesFromJson
+        .map((replyJson) => Comment.fromJson(replyJson))
+        .toList();
+
     return Comment(
       id: json['id'] as int? ?? 0,
       topicId: json['topicId'] as int? ?? 0,
-      workerNumber: json['workerNumber'] as String? ?? '',
-      parentCommentId: json['parentCommentId'] as int?,
-      commentDate: DateTime.parse(json['commentDate'] as String? ?? DateTime.now().toIso8601String()),
+      authorName: json['authorName'] as String? ?? '',
+      authorAvatar: json['authorAvatar'] as String? ?? '',
+      commentDate: DateTime.parse(json['date'] as String? ?? DateTime.now().toIso8601String()),
       content: json['content'] as String? ?? '',
-      status: json['status'] as bool? ?? false,
+      replies: repliesList,
     );
   }
 
   Map<String, dynamic> toJson() => {
         'id': id,
         'topicId': topicId,
-        'workerNumber': workerNumber,
-        'parentCommentId': parentCommentId,
-        'commentDate': commentDate.toIso8601String(),
+        'authorName': authorName,
+        'authorAvatar': authorAvatar,
+        'date': commentDate.toIso8601String(),
         'content': content,
-        'status': status,
+        'replies': replies.map((reply) => reply.toJson()).toList(),
       };
 }

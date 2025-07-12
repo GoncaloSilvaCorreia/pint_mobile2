@@ -44,7 +44,7 @@ class _CursoState extends State<Curso> {
   Future<String> getTrainerName(String trainerWorkerNumber) async {
     // Busca o nome do formador pelo workerNumber diretamente na API correta
     final response = await http.get(
-      Uri.parse('https://pint-13nr.onrender.com/api/users/id/$trainerWorkerNumber'),
+      Uri.parse('https://pint2.onrender.com/api/users/id/$trainerWorkerNumber'),
     );
 
     if (response.statusCode == 200) {
@@ -292,6 +292,37 @@ class _CursoState extends State<Curso> {
                       ),
                       child: Column(
                         children: [
+                          // Tipo do curso dentro da caixa de detalhes
+                          Row(
+                            children: [
+                              const Icon(Icons.cast_connected, size: 22, color: Color(0xFF1976D2)),
+                              const SizedBox(width: 8),
+                              Builder(
+                                builder: (context) {
+                                  String tipoCurso;
+                                  final dynamic tipo = course.courseType;
+                                  if (tipo is bool) {
+                                    tipoCurso = tipo ? 'Assíncrono' : 'Síncrono';
+                                  } else if (tipo is String) {
+                                    tipoCurso = (tipo.toLowerCase() == 'true' || tipo.toLowerCase() == 'assíncrono' || tipo.toLowerCase() == 'assincrono')
+                                        ? 'Assíncrono'
+                                        : 'Síncrono';
+                                  } else {
+                                    tipoCurso = 'Síncrono';
+                                  }
+                                  return Text(
+                                    tipoCurso,
+                                    style: const TextStyle(
+                                      fontSize: 16,
+                                      fontWeight: FontWeight.bold,
+                                      color: Color.fromARGB(255, 0, 0, 0),
+                                    ),
+                                  );
+                                },
+                              ),
+                            ],
+                          ),
+                          const SizedBox(height: 12),
                           _buildDetailRow(
                             Icons.calendar_today,
                             "Data de Início",

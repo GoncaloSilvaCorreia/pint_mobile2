@@ -22,6 +22,7 @@ class AuthService {
       await prefs.setString('token', data['token']);
 
       // Salvar workerNumber no SharedPreferences
+      await prefs.setString('workerNumber', data['user']['workerNumber']);
       await prefs.setInt('userId', data['user']['id']);
 
       // Retornar o utilizador logado com token incluído

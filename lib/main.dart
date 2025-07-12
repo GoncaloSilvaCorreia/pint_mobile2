@@ -18,7 +18,7 @@ class SoftinsaLoginApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp.router(
-      routerConfig: rotas,
+      routerConfig: rotas,  
       title: 'Softinsa Login',
     );
   } 

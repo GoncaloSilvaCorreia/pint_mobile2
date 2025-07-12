@@ -4,10 +4,10 @@ import 'package:pint_mobile/models/curso.dart';
 import 'package:pint_mobile/models/inscricoes.dart';
 
 class EnrollmentService {
-  final String baseUrl = 'https://pint-13nr.onrender.com/api'; 
+  final String baseUrl = 'https://pint2.onrender.com/api'; 
 
   Future<List<Enrollment>> getEnrollments() async {
-    final response = await http.get(Uri.parse('$baseUrl/inscricoes'));
+    final response = await http.get(Uri.parse('$baseUrl/enrollments'));
 
     if (response.statusCode == 200) {
       final List<dynamic> data = json.decode(response.body);
@@ -31,7 +31,7 @@ class EnrollmentService {
 
   Future<Enrollment> createEnrollment(int courseId, int userId) async {
     final response = await http.post(
-      Uri.parse('$baseUrl/inscricoes/create'),
+      Uri.parse('$baseUrl/enrollments/create'),
       headers: {'Content-Type': 'application/json'},
       body: jsonEncode({
         'courseId': courseId,

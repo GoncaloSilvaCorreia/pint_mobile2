@@ -194,7 +194,6 @@ class _TelaPrincipalState extends State<TelaPrincipal> {
     );
   }
 
-
   Widget _buildPageIndicator(int length) {
     return Row(
       mainAxisAlignment: MainAxisAlignment.center,

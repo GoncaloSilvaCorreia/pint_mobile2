@@ -6,6 +6,7 @@ import 'package:pint_mobile/screens/Login/Reset.dart';
 import 'package:pint_mobile/screens/Inicio/Inicio.dart';
 import 'package:pint_mobile/screens/Perfil/Perfil.dart';
 import 'package:pint_mobile/screens/Curso/MeusCursos.dart';
+import 'package:pint_mobile/screens/Forum/Forum.dart';
 import 'package:provider/provider.dart';
 import 'package:pint_mobile/utils/auth_provider.dart';
 import 'package:pint_mobile/screens/Pesquisa/Pesquisa.dart';
@@ -47,6 +48,11 @@ final rotas = GoRouter(
     GoRoute(
       path: '/meus-cursos',
       builder: (context, state) => const MeusCursos(),
+    ),
+    GoRoute(
+      name: 'Forum',
+      path: '/Forum',
+      builder: (context, state) => Forum(),
     ),
   ],
   redirect: (context, state) {
