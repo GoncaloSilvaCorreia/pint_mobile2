@@ -232,13 +232,6 @@ class _TelaPrincipalState extends State<TelaPrincipal> {
                 ],
               ),
             ),
-            const Spacer(),
-            IconButton(
-              icon: const Icon(Icons.notifications, color: Color(0xFF3F51B5), size: 28), // Ícone maior
-              onPressed: () {
-                // Ação do ícone de notificações
-              },
-            ),
           ],
         ),
       ),

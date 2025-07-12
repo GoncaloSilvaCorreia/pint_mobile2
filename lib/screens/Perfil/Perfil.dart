@@ -379,13 +379,22 @@ class PerfilScreenState extends State<Perfil> {
                                   final url = cursos[i]["pdfUrl"];
                                   if (url != null && url.isNotEmpty) {
                                     final uri = Uri.parse(url);
-                                    if (await canLaunchUrl(uri)) {
-                                      await launchUrl(uri, mode: LaunchMode.externalApplication);
-                                    } else {
+                                    try {
+                                      if (await canLaunchUrl(uri)) {
+                                        await launchUrl(uri, mode: LaunchMode.externalApplication);
+                                      } else {
+                                        // Tenta abrir no navegador padrão se não encontrar componente
+                                        await launchUrl(uri, mode: LaunchMode.platformDefault);
+                                      }
+                                    } catch (e) {
                                       ScaffoldMessenger.of(context).showSnackBar(
                                         SnackBar(content: Text('Não foi possível abrir o certificado.')),
                                       );
                                     }
+                                  } else {
+                                    ScaffoldMessenger.of(context).showSnackBar(
+                                      SnackBar(content: Text('Certificado não disponível.')),
+                                    );
                                   }
                                 },
                                 child: const Icon(Icons.verified, color: Colors.green, size: 24),

@@ -9,6 +9,7 @@ import 'package:pint_mobile/api/api.dart';
 import 'package:pint_mobile/utils/Rodape.dart';
 import 'package:pint_mobile/utils/SideMenu.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:url_launcher/url_launcher.dart';
 
 class CursoConteudo extends StatefulWidget {
   final int courseId;
@@ -157,58 +158,157 @@ class _CursoConteudo extends State<CursoConteudo> {
   }
 
   Widget _buildResourceItem(Resource resource) {
-    IconData icon;
-    Color color;
-    String type;
-
     switch (resource.typeId) {
       case 1: // PDF
-        icon = Icons.picture_as_pdf;
-        color = Colors.red;
-        type = "PDF";
-        break;
+        return Card(
+          color: Colors.red[50],
+          margin: const EdgeInsets.symmetric(vertical: 6, horizontal: 2),
+          child: ListTile(
+            leading: Icon(Icons.picture_as_pdf, color: Colors.red, size: 32),
+            title: Text(resource.title ?? 'PDF sem título', style: const TextStyle(fontWeight: FontWeight.bold)),
+            subtitle: const Text('PDF', style: TextStyle(color: Colors.red)),
+            trailing: resource.file != null
+                ? IconButton(
+                    icon: const Icon(Icons.open_in_new, color: Colors.red),
+                    tooltip: 'Abrir PDF',
+                    onPressed: () async {
+                      final url = resource.file;
+                      if (url != null && url.isNotEmpty) {
+                        final uri = Uri.parse(url);
+                        try {
+                          if (await canLaunchUrl(uri)) {
+                            await launchUrl(uri, mode: LaunchMode.externalApplication);
+                          } else {
+                            await launchUrl(uri, mode: LaunchMode.platformDefault);
+                          }
+                        } catch (e) {
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            const SnackBar(content: Text('Não foi possível abrir o PDF.')),
+                          );
+                        }
+                      } else {
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          const SnackBar(content: Text('Ficheiro do PDF não disponível.')),
+                        );
+                      }
+                    },
+                  )
+                : null,
+            onTap: () {
+              final url = resource.file;
+              if (url != null && url.isNotEmpty) {
+                final uri = Uri.parse(url);
+                launchUrl(uri, mode: LaunchMode.externalApplication);
+              } else {
+                ScaffoldMessenger.of(context).showSnackBar(
+                  const SnackBar(content: Text('Ficheiro do PDF não disponível.')),
+                );
+              }
+            },
+          ),
+        );
       case 2: // Vídeo
-        icon = Icons.videocam;
-        color = Colors.blue;
-        type = "Vídeo";
-        break;
+        return Card(
+          color: Colors.blue[50],
+          margin: const EdgeInsets.symmetric(vertical: 6, horizontal: 2),
+          child: ListTile(
+            leading: Icon(Icons.videocam, color: Colors.blue, size: 32),
+            title: Text(resource.title ?? 'Vídeo sem título', style: const TextStyle(fontWeight: FontWeight.bold)),
+            subtitle: const Text('Vídeo', style: TextStyle(color: Colors.blue)),
+            trailing: resource.link != null
+                ? IconButton(
+                    icon: const Icon(Icons.play_circle, color: Colors.blue),
+                    tooltip: 'Abrir vídeo',
+                    onPressed: () async {
+                      final url = resource.link;
+                      if (url != null && url.isNotEmpty) {
+                        final uri = Uri.parse(url);
+                        await launchUrl(uri, mode: LaunchMode.externalApplication);
+                      } else {
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          const SnackBar(content: Text('Link do vídeo não disponível.')),
+                        );
+                      }
+                    },
+                  )
+                : null,
+            onTap: () {
+              final url = resource.link;
+              if (url != null && url.isNotEmpty) {
+                final uri = Uri.parse(url);
+                launchUrl(uri, mode: LaunchMode.externalApplication);
+              } else {
+                ScaffoldMessenger.of(context).showSnackBar(
+                  const SnackBar(content: Text('Link do vídeo não disponível.')),
+                );
+              }
+            },
+          ),
+        );
       case 3: // Link
-        icon = Icons.link;
-        color = Colors.green;
-        type = "Link";
-        break;
+        return Card(
+          color: Colors.green[50],
+          margin: const EdgeInsets.symmetric(vertical: 6, horizontal: 2),
+          child: ListTile(
+            leading: Icon(Icons.link, color: Colors.green, size: 32),
+            title: Text(resource.title ?? 'Link sem título', style: const TextStyle(fontWeight: FontWeight.bold)),
+            subtitle: const Text('Link', style: TextStyle(color: Colors.green)),
+            trailing: resource.link != null
+                ? IconButton(
+                    icon: const Icon(Icons.open_in_new, color: Colors.green),
+                    tooltip: 'Abrir link',
+                    onPressed: () async {
+                      final url = resource.link;
+                      if (url != null && url.isNotEmpty) {
+                        final uri = Uri.parse(url);
+                        await launchUrl(uri, mode: LaunchMode.externalApplication);
+                      } else {
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          const SnackBar(content: Text('Link não disponível.')),
+                        );
+                      }
+                    },
+                  )
+                : null,
+            onTap: () {
+              final url = resource.link;
+              if (url != null && url.isNotEmpty) {
+                final uri = Uri.parse(url);
+                launchUrl(uri, mode: LaunchMode.externalApplication);
+              } else {
+                ScaffoldMessenger.of(context).showSnackBar(
+                  const SnackBar(content: Text('Link não disponível.')),
+                );
+              }
+            },
+          ),
+        );
       case 4: // Texto
-        icon = Icons.text_fields;
-        color = Colors.purple;
-        type = "Texto";
-        break;
+        return Card(
+          color: Colors.purple[50],
+          margin: const EdgeInsets.symmetric(vertical: 6, horizontal: 2),
+          child: ExpansionTile(
+            leading: Icon(Icons.text_fields, color: Colors.purple, size: 32),
+            title: Text(resource.title ?? 'Texto sem título', style: const TextStyle(fontWeight: FontWeight.bold)),
+            subtitle: const Text('Texto', style: TextStyle(color: Colors.purple)),
+            children: [
+              Padding(
+                padding: const EdgeInsets.all(12.0),
+                child: Text(resource.text ?? 'Sem conteúdo', style: const TextStyle(fontSize: 16)),
+              ),
+            ],
+          ),
+        );
       default:
-        icon = Icons.insert_drive_file;
-        color = Colors.grey;
-        type = "Arquivo";
+        return Card(
+          color: Colors.grey[100],
+          margin: const EdgeInsets.symmetric(vertical: 6, horizontal: 2),
+          child: ListTile(
+            leading: Icon(Icons.insert_drive_file, color: Colors.grey, size: 32),
+            title: Text(resource.title ?? 'Arquivo sem título', style: const TextStyle(fontWeight: FontWeight.bold)),
+            subtitle: const Text('Arquivo', style: TextStyle(color: Colors.grey)),
+          ),
+        );
     }
-
-    return ListTile(
-      leading: CircleAvatar(
-        backgroundColor: color.withOpacity(0.15),
-        child: Icon(icon, color: color, size: 28),
-      ),
-      title: Text(resource.title ?? 'Recurso sem título', style: const TextStyle(fontWeight: FontWeight.w600)),
-      subtitle: Text(type, style: TextStyle(color: color)),
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-      tileColor: Colors.grey[50],
-      onTap: () {
-        // Implementar ação ao clicar no recurso
-        if (resource.typeId == 1 && resource.file != null) {
-          // Abrir PDF
-        } else if (resource.typeId == 2 && resource.link != null) {
-          // Abrir vídeo
-        } else if (resource.typeId == 3 && resource.link != null) {
-          // Abrir link
-        } else if (resource.typeId == 4 && resource.text != null) {
-          // Mostrar texto
-        }
-      },
-    );
   }
 }
